@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import { loadSession } from '$lib/session';
+  import LoadingState from '$lib/components/ui/LoadingState.svelte';
 
   onMount(async () => {
     const current = await loadSession().catch(() => ({ authenticated: false }));
@@ -9,4 +10,4 @@
   });
 </script>
 
-<div class="py-12 text-center text-sm text-muted-foreground">Loading...</div>
+<LoadingState label="Loading session..." />

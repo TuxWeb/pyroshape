@@ -4,6 +4,8 @@
   import { loadSession, type Session } from '$lib/session';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
+  import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
+  import FormField from '$lib/components/ui/FormField.svelte';
   import Input from '$lib/components/ui/Input.svelte';
 
   let email = '';
@@ -38,21 +40,15 @@
 
   <Card class="p-5">
     <form class="grid gap-4" on:submit|preventDefault={submit}>
-      <label class="grid gap-2 text-sm font-medium">
-        Email
+      <FormField label="Email">
         <Input bind:value={email} type="email" autocomplete="email" required />
-      </label>
+      </FormField>
 
-      <label class="grid gap-2 text-sm font-medium">
-        Password
+      <FormField label="Password">
         <Input bind:value={password} type="password" autocomplete="current-password" required />
-      </label>
+      </FormField>
 
-      {#if error}
-        <p class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
-        </p>
-      {/if}
+      <ErrorMessage message={error} />
 
       <Button type="submit" class="w-full" disabled={submitting}>
         {submitting ? 'Signing in...' : 'Sign in'}

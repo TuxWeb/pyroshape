@@ -1,28 +1,15 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { session, sessionLoading, loadSession, logout } from '$lib/session';
-  import Button from '$lib/components/ui/Button.svelte';
+  import { session, sessionLoading, loadSession } from '$lib/session';
   import Card from '$lib/components/ui/Card.svelte';
-
-  let error = '';
+  import EmptyState from '$lib/components/ui/EmptyState.svelte';
+  import LoadingState from '$lib/components/ui/LoadingState.svelte';
 
   onMount(() => {
     loadSession().catch(() => {
       session.set({ authenticated: false });
     });
   });
-
-  async function signOut() {
-    error = '';
-
-    try {
-      await logout();
-      await goto('/login');
-    } catch {
-      error = 'Logout failed';
-    }
-  }
 </script>
 
 <div class="grid gap-6">
@@ -32,23 +19,16 @@
       <p class="text-sm text-muted-foreground">Account session status and profile details.</p>
     </div>
 
-    {#if $session.authenticated}
-      <Button variant="secondary" type="button" on:click={signOut}>Log out</Button>
-    {/if}
   </div>
 
   {#if $sessionLoading}
-    <Card class="p-5 text-sm text-muted-foreground">Loading session...</Card>
+    <LoadingState label="Loading session..." />
   {:else if !$session.authenticated}
-    <Card class="grid gap-4 p-5">
-      <div class="grid gap-1">
-        <h2 class="text-base font-semibold">Not signed in</h2>
-        <p class="text-sm text-muted-foreground">Sign in to open your dashboard.</p>
-      </div>
+    <EmptyState title="Not signed in" description="Sign in to open your dashboard.">
       <a class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90" href="/login">
         Go to login
       </a>
-    </Card>
+    </EmptyState>
   {:else}
     <div class="grid gap-4 md:grid-cols-2">
       <Card class="grid gap-3 p-5">
@@ -81,9 +61,4 @@
     </div>
   {/if}
 
-  {#if error}
-    <p class="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-      {error}
-    </p>
-  {/if}
 </div>
