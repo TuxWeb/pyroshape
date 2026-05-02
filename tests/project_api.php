@@ -258,6 +258,7 @@ CREATE TABLE projects (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     users_id INTEGER NOT NULL,
     name TEXT NOT NULL,
+    description TEXT NULL,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
@@ -311,7 +312,10 @@ assertStatus($multibyteProjectResponse, 201, 'multibyte project name');
 $multibyteProjectPayload = responseJson($multibyteProjectResponse);
 assertPayloadValue($multibyteProjectPayload['project'], 'name', $multibyteProjectName, 'multibyte project name');
 
-$createProjectResponse = $slim->handle(jsonRequest('POST', '/api/projects', ['name' => '  Alpha Project  '], $userA['cookie']));
+$createProjectResponse = $slim->handle(jsonRequest('POST', '/api/projects', [
+    'name' => '  Alpha Project  ',
+    'description' => '  Initial planning notes  ',
+], $userA['cookie']));
 assertStatus($createProjectResponse, 201, 'create project');
 $createProjectPayload = responseJson($createProjectResponse);
 $project = $createProjectPayload['project'] ?? null;
@@ -320,6 +324,7 @@ if (!is_array($project)) {
     exit(1);
 }
 assertPayloadValue($project, 'name', 'Alpha Project', 'create project');
+assertPayloadValue($project, 'description', 'Initial planning notes', 'create project');
 if (!isset($project['id'], $project['createdAt'], $project['updatedAt']) || !is_int($project['id'])) {
     fwrite(STDERR, "create project: expected id, createdAt, updatedAt\n");
     exit(1);
@@ -334,10 +339,12 @@ if (!isset($listPayload['projects'][0]) || !is_array($listPayload['projects'][0]
     exit(1);
 }
 assertPayloadValue($listPayload['projects'][0], 'id', $projectId, 'project list');
+assertPayloadValue($listPayload['projects'][0], 'description', 'Initial planning notes', 'project list');
 
 $detailResponse = $slim->handle(jsonRequest('GET', "/api/projects/$projectId", null, $userA['cookie']));
 assertStatus($detailResponse, 200, 'project detail');
 $detailPayload = responseJson($detailResponse);
+assertPayloadValue($detailPayload['project'], 'description', 'Initial planning notes', 'project detail');
 if (($detailPayload['project']['tasks'] ?? null) !== []) {
     fwrite(STDERR, "project detail: expected empty tasks array\n");
     exit(1);
@@ -347,10 +354,14 @@ $invalidPatchResponse = $slim->handle(jsonRequest('PATCH', "/api/projects/$proje
 assertStatus($invalidPatchResponse, 400, 'blank project patch');
 assertNestedMessage(responseJson($invalidPatchResponse), 'blank project patch');
 
-$patchProjectResponse = $slim->handle(jsonRequest('PATCH', "/api/projects/$projectId", ['name' => ' Beta Project '], $userA['cookie']));
+$patchProjectResponse = $slim->handle(jsonRequest('PATCH', "/api/projects/$projectId", [
+    'name' => ' Beta Project ',
+    'description' => '   ',
+], $userA['cookie']));
 assertStatus($patchProjectResponse, 200, 'patch project');
 $patchProjectPayload = responseJson($patchProjectResponse);
 assertPayloadValue($patchProjectPayload['project'], 'name', 'Beta Project', 'patch project');
+assertPayloadValue($patchProjectPayload['project'], 'description', null, 'patch project');
 if (($patchProjectPayload['project']['tasks'] ?? null) !== []) {
     fwrite(STDERR, "patch project: expected detail project with tasks\n");
     exit(1);

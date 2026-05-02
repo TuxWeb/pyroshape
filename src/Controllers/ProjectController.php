@@ -29,7 +29,8 @@ class ProjectController
             $body = $this->requestBody($request);
             $project = $this->projects->createProject(
                 $this->userId($request),
-                $this->projectName($body['name'] ?? null)
+                $this->projectName($body['name'] ?? null),
+                $this->projectDescription($body['description'] ?? null)
             );
 
             return $this->json($response, ['project' => $project], 201);
@@ -55,7 +56,8 @@ class ProjectController
             $project = $this->projects->updateProject(
                 $this->userId($request),
                 (int) $id,
-                $this->projectName($body['name'] ?? null)
+                $this->projectName($body['name'] ?? null),
+                $this->projectDescription($body['description'] ?? null)
             );
             if ($project === null) {
                 return $this->jsonError($response, 'Project not found', 404);
@@ -166,6 +168,20 @@ class ProjectController
         }
 
         return $name;
+    }
+
+    private function projectDescription(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        if (!is_string($value)) {
+            throw new InvalidArgumentException('Project description must be a string or null');
+        }
+
+        $description = trim($value);
+
+        return $description === '' ? null : $description;
     }
 
     private function taskTitle(mixed $value, bool $required): string

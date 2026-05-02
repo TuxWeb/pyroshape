@@ -19,7 +19,7 @@ class ProjectRepository
     public function listProjects(int $userId): array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, users_id, name, created_at, updated_at
+            'SELECT id, users_id, name, description, created_at, updated_at
              FROM projects
              WHERE users_id = :users_id
              ORDER BY updated_at DESC, id DESC'
@@ -35,16 +35,17 @@ class ProjectRepository
     /**
      * @return array<string, mixed>
      */
-    public function createProject(int $userId, string $name): array
+    public function createProject(int $userId, string $name, ?string $description): array
     {
         $now = $this->now();
         $statement = $this->pdo->prepare(
-            'INSERT INTO projects (users_id, name, created_at, updated_at)
-             VALUES (:users_id, :name, :created_at, :updated_at)'
+            'INSERT INTO projects (users_id, name, description, created_at, updated_at)
+             VALUES (:users_id, :name, :description, :created_at, :updated_at)'
         );
         $statement->execute([
             'users_id' => $userId,
             'name' => $name,
+            'description' => $description,
             'created_at' => $now,
             'updated_at' => $now,
         ]);
@@ -59,7 +60,7 @@ class ProjectRepository
     public function findProject(int $userId, int $projectId): ?array
     {
         $statement = $this->pdo->prepare(
-            'SELECT id, users_id, name, created_at, updated_at
+            'SELECT id, users_id, name, description, created_at, updated_at
              FROM projects
              WHERE id = :id AND users_id = :users_id
              LIMIT 1'
@@ -91,7 +92,7 @@ class ProjectRepository
     /**
      * @return array<string, mixed>|null
      */
-    public function updateProject(int $userId, int $projectId, string $name): ?array
+    public function updateProject(int $userId, int $projectId, string $name, ?string $description): ?array
     {
         if ($this->findProject($userId, $projectId) === null) {
             return null;
@@ -99,13 +100,14 @@ class ProjectRepository
 
         $statement = $this->pdo->prepare(
             'UPDATE projects
-             SET name = :name, updated_at = :updated_at
+             SET name = :name, description = :description, updated_at = :updated_at
              WHERE id = :id AND users_id = :users_id'
         );
         $statement->execute([
             'id' => $projectId,
             'users_id' => $userId,
             'name' => $name,
+            'description' => $description,
             'updated_at' => $this->now(),
         ]);
 
@@ -297,6 +299,7 @@ class ProjectRepository
         return [
             'id' => (int) $row['id'],
             'name' => (string) $row['name'],
+            'description' => $row['description'] === null ? null : (string) $row['description'],
             'createdAt' => (string) $row['created_at'],
             'updatedAt' => (string) $row['updated_at'],
         ];
