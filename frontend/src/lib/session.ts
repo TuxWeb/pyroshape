@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { apiJson } from '$lib/api';
 
 export type Session = {
@@ -17,19 +17,50 @@ const anonymousSession: Session = { authenticated: false };
 export const session = writable<Session>(anonymousSession);
 export const sessionLoading = writable(false);
 
-export async function loadSession(): Promise<Session> {
+let sessionLoaded = false;
+let sessionRequest: Promise<Session> | null = null;
+
+function requestSession(): Promise<Session> {
+  if (sessionRequest) {
+    return sessionRequest;
+  }
+
   sessionLoading.set(true);
 
-  try {
-    const current = await apiJson<Session>('/api/session');
-    session.set(current);
-    return current;
-  } finally {
-    sessionLoading.set(false);
+  sessionRequest = apiJson<Session>('/api/session')
+    .then((current) => {
+      session.set(current);
+      sessionLoaded = true;
+      return current;
+    })
+    .catch((error) => {
+      session.set(anonymousSession);
+      sessionLoaded = true;
+      throw error;
+    })
+    .finally(() => {
+      sessionRequest = null;
+      sessionLoading.set(false);
+    });
+
+  return sessionRequest;
+}
+
+export async function ensureSessionLoaded(): Promise<Session> {
+  if (sessionLoaded) {
+    return get(session);
   }
+
+  return requestSession().catch(() => get(session));
+}
+
+export async function loadSession(): Promise<Session> {
+  sessionLoaded = false;
+  return requestSession();
 }
 
 export async function logout(): Promise<void> {
   await apiJson<Session>('/api/auth/logout', { method: 'POST' });
   session.set(anonymousSession);
+  sessionLoaded = true;
 }

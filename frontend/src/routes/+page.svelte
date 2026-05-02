@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
-  import { loadSession } from '$lib/session';
+  import { ensureSessionLoaded } from '$lib/session';
   import LoadingState from '$lib/components/ui/LoadingState.svelte';
 
   onMount(async () => {
-    const current = await loadSession().catch(() => ({ authenticated: false }));
+    const current = await ensureSessionLoaded();
     await goto(current.authenticated ? '/dashboard' : '/login');
   });
 </script>

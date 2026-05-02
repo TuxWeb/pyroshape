@@ -1,15 +1,8 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { session, sessionLoading, loadSession } from '$lib/session';
+  import { session, sessionLoading } from '$lib/session';
   import Card from '$lib/components/ui/Card.svelte';
   import EmptyState from '$lib/components/ui/EmptyState.svelte';
   import LoadingState from '$lib/components/ui/LoadingState.svelte';
-
-  onMount(() => {
-    loadSession().catch(() => {
-      session.set({ authenticated: false });
-    });
-  });
 </script>
 
 <div class="grid gap-6">
