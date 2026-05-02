@@ -305,6 +305,12 @@ $longProjectResponse = $slim->handle(jsonRequest('POST', '/api/projects', ['name
 assertStatus($longProjectResponse, 400, 'long project name');
 assertNestedMessage(responseJson($longProjectResponse), 'long project name');
 
+$multibyteProjectName = str_repeat('火', 119);
+$multibyteProjectResponse = $slim->handle(jsonRequest('POST', '/api/projects', ['name' => $multibyteProjectName], $userA['cookie']));
+assertStatus($multibyteProjectResponse, 201, 'multibyte project name');
+$multibyteProjectPayload = responseJson($multibyteProjectResponse);
+assertPayloadValue($multibyteProjectPayload['project'], 'name', $multibyteProjectName, 'multibyte project name');
+
 $createProjectResponse = $slim->handle(jsonRequest('POST', '/api/projects', ['name' => '  Alpha Project  '], $userA['cookie']));
 assertStatus($createProjectResponse, 201, 'create project');
 $createProjectPayload = responseJson($createProjectResponse);
@@ -378,6 +384,23 @@ if (!isset($task['id'], $task['createdAt'], $task['updatedAt']) || !is_int($task
     exit(1);
 }
 $taskId = $task['id'];
+
+$emptyTaskPatchResponse = $slim->handle(jsonRequest('PATCH', "/api/tasks/$taskId", [], $userA['cookie']));
+assertStatus($emptyTaskPatchResponse, 400, 'empty task patch');
+assertNestedMessage(responseJson($emptyTaskPatchResponse), 'empty task patch');
+
+$stringCompletedTaskPatchResponse = $slim->handle(jsonRequest('PATCH', "/api/tasks/$taskId", ['completed' => 'false'], $userA['cookie']));
+assertStatus($stringCompletedTaskPatchResponse, 400, 'string completed task patch');
+assertNestedMessage(responseJson($stringCompletedTaskPatchResponse), 'string completed task patch');
+
+$stringPositionTaskPatchResponse = $slim->handle(jsonRequest('PATCH', "/api/tasks/$taskId", ['position' => 'abc'], $userA['cookie']));
+assertStatus($stringPositionTaskPatchResponse, 400, 'string position task patch');
+assertNestedMessage(responseJson($stringPositionTaskPatchResponse), 'string position task patch');
+
+$completedOnlyTaskPatchResponse = $slim->handle(jsonRequest('PATCH', "/api/tasks/$taskId", ['completed' => true], $userA['cookie']));
+assertStatus($completedOnlyTaskPatchResponse, 200, 'completed-only task patch');
+$completedOnlyTaskPatchPayload = responseJson($completedOnlyTaskPatchResponse);
+assertPayloadValue($completedOnlyTaskPatchPayload['task'], 'completed', true, 'completed-only task patch');
 
 $patchTaskResponse = $slim->handle(jsonRequest('PATCH', "/api/tasks/$taskId", [
     'title' => ' Done task ',

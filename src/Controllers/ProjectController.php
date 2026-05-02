@@ -84,8 +84,8 @@ class ProjectController
                 $this->userId($request),
                 (int) $id,
                 $this->taskTitle($body['title'] ?? null, true),
-                $this->optionalBool($body['completed'] ?? null),
-                $this->optionalInt($body['position'] ?? null)
+                $this->optionalBool($body['completed'] ?? null, 'completed'),
+                $this->optionalInt($body['position'] ?? null, 'position')
             );
             if ($task === null) {
                 return $this->jsonError($response, 'Project not found', 404);
@@ -106,10 +106,13 @@ class ProjectController
                 $fields['title'] = $this->taskTitle($body['title'], false);
             }
             if (array_key_exists('completed', $body)) {
-                $fields['completed'] = $this->optionalBool($body['completed']) === true;
+                $fields['completed'] = $this->boolField($body['completed'], 'completed');
             }
             if (array_key_exists('position', $body)) {
-                $fields['position'] = $this->optionalInt($body['position']) ?? 0;
+                $fields['position'] = $this->intField($body['position'], 'position');
+            }
+            if ($fields === []) {
+                return $this->jsonError($response, 'Task update payload is empty', 400);
             }
 
             $task = $this->projects->updateTask($this->userId($request), (int) $id, $fields);
@@ -158,7 +161,7 @@ class ProjectController
         if ($name === '') {
             throw new InvalidArgumentException('Project name is required');
         }
-        if (strlen($name) > 120) {
+        if ($this->textLength($name) > 120) {
             throw new InvalidArgumentException('Project name must be 120 characters or fewer');
         }
 
@@ -171,21 +174,52 @@ class ProjectController
         if ($title === '') {
             throw new InvalidArgumentException($required ? 'Task title is required' : 'Task title cannot be blank');
         }
-        if (strlen($title) > 180) {
+        if ($this->textLength($title) > 180) {
             throw new InvalidArgumentException('Task title must be 180 characters or fewer');
         }
 
         return $title;
     }
 
-    private function optionalBool(mixed $value): ?bool
+    private function optionalBool(mixed $value, string $field): ?bool
     {
-        return $value === null ? null : (bool) $value;
+        if ($value === null) {
+            return null;
+        }
+
+        return $this->boolField($value, $field);
     }
 
-    private function optionalInt(mixed $value): ?int
+    private function boolField(mixed $value, string $field): bool
     {
-        return $value === null ? null : (int) $value;
+        if (!is_bool($value)) {
+            throw new InvalidArgumentException("$field must be a boolean");
+        }
+
+        return $value;
+    }
+
+    private function optionalInt(mixed $value, string $field): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return $this->intField($value, $field);
+    }
+
+    private function intField(mixed $value, string $field): int
+    {
+        if (!is_int($value)) {
+            throw new InvalidArgumentException("$field must be an integer");
+        }
+
+        return $value;
+    }
+
+    private function textLength(string $value): int
+    {
+        return function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
     }
 
     private function userId(Request $request): int
