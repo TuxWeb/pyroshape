@@ -19,31 +19,41 @@ export const sessionLoading = writable(false);
 
 let sessionLoaded = false;
 let sessionRequest: Promise<Session> | null = null;
+let sessionRequestId = 0;
 
-function requestSession(): Promise<Session> {
-  if (sessionRequest) {
+function requestSession({ force = false }: { force?: boolean } = {}): Promise<Session> {
+  if (sessionRequest && !force) {
     return sessionRequest;
   }
 
+  const requestId = ++sessionRequestId;
   sessionLoading.set(true);
 
-  sessionRequest = apiJson<Session>('/api/session')
+  const request = apiJson<Session>('/api/session')
     .then((current) => {
-      session.set(current);
-      sessionLoaded = true;
+      if (requestId === sessionRequestId) {
+        session.set(current);
+        sessionLoaded = true;
+      }
       return current;
     })
     .catch((error) => {
-      session.set(anonymousSession);
-      sessionLoaded = true;
+      if (requestId === sessionRequestId) {
+        session.set(anonymousSession);
+        sessionLoaded = true;
+      }
       throw error;
     })
     .finally(() => {
-      sessionRequest = null;
-      sessionLoading.set(false);
+      if (requestId === sessionRequestId) {
+        sessionRequest = null;
+        sessionLoading.set(false);
+      }
     });
 
-  return sessionRequest;
+  sessionRequest = request;
+
+  return request;
 }
 
 export async function ensureSessionLoaded(): Promise<Session> {
@@ -56,11 +66,14 @@ export async function ensureSessionLoaded(): Promise<Session> {
 
 export async function loadSession(): Promise<Session> {
   sessionLoaded = false;
-  return requestSession();
+  return requestSession({ force: true });
 }
 
 export async function logout(): Promise<void> {
   await apiJson<Session>('/api/auth/logout', { method: 'POST' });
+  sessionRequestId += 1;
+  sessionRequest = null;
   session.set(anonymousSession);
   sessionLoaded = true;
+  sessionLoading.set(false);
 }
