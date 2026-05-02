@@ -36,7 +36,29 @@ This worktree expects `/home/dino/projects/pyroshape-core` at `../../../pyroshap
 
 ## Runtime
 
-Build the SPA, configure the app in `config/config.php`, then serve `public/index.php` through PHP-FPM/Apache/Nginx or the local PHP server:
+Build the SPA, configure the app in `config/config.php`, prepare the database, then serve `public/index.php` through PHP-FPM/Apache/Nginx or the local PHP server.
+
+The default runtime config uses MySQL:
+
+```php
+mysql:host=127.0.0.1;port=3306;dbname=pyroshape;charset=utf8mb4
+```
+
+Create the database and user to match `config/config.php`, or update that file with your local MySQL DSN and credentials. For the default DSN, one local setup is:
+
+```bash
+mysql -h127.0.0.1 -uroot -p -e "CREATE DATABASE IF NOT EXISTS pyroshape CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
+mysql -h127.0.0.1 -uroot -p -e "CREATE USER IF NOT EXISTS 'pyroshape'@'127.0.0.1' IDENTIFIED BY ''; GRANT ALL PRIVILEGES ON pyroshape.* TO 'pyroshape'@'127.0.0.1'"
+```
+
+Apply the schema migrations before serving the app:
+
+```bash
+mysql -h127.0.0.1 -uroot -p pyroshape < database/migrations/001_auth_schema.sql
+mysql -h127.0.0.1 -uroot -p pyroshape < database/migrations/002_projects_tasks_schema.sql
+```
+
+Then build and serve the app:
 
 ```bash
 npm --prefix frontend run build
@@ -85,7 +107,7 @@ npm --prefix frontend run build
 php tests/spa_fallback.php
 php tests/smoke.php
 php tests/access_logger.php
-php tests/skeleton_identity.php
+php tests/demo_identity.php
 ```
 
 The auth, token cookie, project API, access logger, and identity checks use SQLite-backed test configuration where applicable. If a local MySQL-backed check is added later and fails because MySQL is not configured, record the exact failure and continue with the SQLite-backed checks above.
