@@ -114,10 +114,10 @@ Frontend verification should cover:
 
 The first version will not include teams, sharing, roles/permissions beyond user ownership, realtime updates, offline mode, SSR, file uploads, billing, or a published reusable frontend package.
 
-## Open Decisions
+## Decisions For Version 1
 
-Use Projects + Tasks as the demo domain unless review changes it.
+Use Projects + Tasks as the demo domain.
 
-Use the existing SvelteKit static SPA model unless implementation exposes a concrete limitation.
+Use the existing SvelteKit static SPA model from `pyroshape-skeleton`.
 
 Keep frontend code in `pyroshape-demo`, not in `pyroshape-core`.
