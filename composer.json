@@ -1,0 +1,25 @@
+{
+    "name": "dam2k/pyroshape-core",
+    "description": "Reusable backend toolkit for Pyroshape applications",
+    "version": "0.1.0",
+    "type": "library",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Dino Ciuffetti",
+            "email": "dam2000@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.5",
+        "php-di/slim-bridge": "^3.4",
+        "slim/psr7": "^1.8",
+        "monolog/monolog": "^3.10",
+        "firebase/php-jwt": "^7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dam2k\\Pyroshape\\Core\\": "src/"
+        }
+    }
+}
