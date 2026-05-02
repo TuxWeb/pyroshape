@@ -364,8 +364,31 @@ $longTaskResponse = $slim->handle(jsonRequest('POST', "/api/projects/$projectId/
 assertStatus($longTaskResponse, 400, 'long task title');
 assertNestedMessage(responseJson($longTaskResponse), 'long task title');
 
+$nullCompletedTaskResponse = $slim->handle(jsonRequest('POST', "/api/projects/$projectId/tasks", [
+    'title' => 'Null completed task',
+    'completed' => null,
+], $userA['cookie']));
+assertStatus($nullCompletedTaskResponse, 400, 'null completed task create');
+assertNestedMessage(responseJson($nullCompletedTaskResponse), 'null completed task create');
+
+$nullPositionTaskResponse = $slim->handle(jsonRequest('POST', "/api/projects/$projectId/tasks", [
+    'title' => 'Null position task',
+    'position' => null,
+], $userA['cookie']));
+assertStatus($nullPositionTaskResponse, 400, 'null position task create');
+assertNestedMessage(responseJson($nullPositionTaskResponse), 'null position task create');
+
+$defaultTaskResponse = $slim->handle(jsonRequest('POST', "/api/projects/$projectId/tasks", [
+    'title' => 'Default task',
+], $userA['cookie']));
+assertStatus($defaultTaskResponse, 201, 'default task create');
+$defaultTaskPayload = responseJson($defaultTaskResponse);
+assertPayloadValue($defaultTaskPayload['task'], 'completed', false, 'default task create');
+assertPayloadValue($defaultTaskPayload['task'], 'position', 0, 'default task create');
+
 $createTaskResponse = $slim->handle(jsonRequest('POST', "/api/projects/$projectId/tasks", [
     'title' => ' First task ',
+    'completed' => false,
     'position' => 7,
 ], $userA['cookie']));
 assertStatus($createTaskResponse, 201, 'create task');

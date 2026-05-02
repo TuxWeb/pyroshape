@@ -84,8 +84,8 @@ class ProjectController
                 $this->userId($request),
                 (int) $id,
                 $this->taskTitle($body['title'] ?? null, true),
-                $this->optionalBool($body['completed'] ?? null, 'completed'),
-                $this->optionalInt($body['position'] ?? null, 'position')
+                array_key_exists('completed', $body) ? $this->boolField($body['completed'], 'completed') : null,
+                array_key_exists('position', $body) ? $this->intField($body['position'], 'position') : null
             );
             if ($task === null) {
                 return $this->jsonError($response, 'Project not found', 404);
@@ -181,15 +181,6 @@ class ProjectController
         return $title;
     }
 
-    private function optionalBool(mixed $value, string $field): ?bool
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return $this->boolField($value, $field);
-    }
-
     private function boolField(mixed $value, string $field): bool
     {
         if (!is_bool($value)) {
@@ -197,15 +188,6 @@ class ProjectController
         }
 
         return $value;
-    }
-
-    private function optionalInt(mixed $value, string $field): ?int
-    {
-        if ($value === null) {
-            return null;
-        }
-
-        return $this->intField($value, $field);
     }
 
     private function intField(mixed $value, string $field): int
