@@ -201,7 +201,16 @@ class ProjectController
 
     private function textLength(string $value): int
     {
-        return function_exists('mb_strlen') ? mb_strlen($value) : strlen($value);
+        if (function_exists('mb_strlen')) {
+            return mb_strlen($value, 'UTF-8');
+        }
+
+        $length = preg_match_all('/./us', $value, $matches);
+        if ($length !== false) {
+            return $length;
+        }
+
+        return strlen($value);
     }
 
     private function userId(Request $request): int
