@@ -4,14 +4,14 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec26741b5bb3d3d9560af1910fc2bad8",
+    "content-hash": "855961bfcf8209bc742c9e1ad94cec5d",
     "packages": [
         {
             "name": "dam2k/pyroshape-core",
             "version": "0.1.0",
             "dist": {
                 "type": "path",
-                "url": "../../../pyroshape-core",
+                "url": "../pyroshape-core",
                 "reference": "c85484976ea096826e5311ea143364987a6e6b1c"
             },
             "require": {

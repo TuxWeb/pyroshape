@@ -15,7 +15,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../../../pyroshape-core",
+            "url": "../pyroshape-core",
             "options": {
                 "symlink": true
             }
