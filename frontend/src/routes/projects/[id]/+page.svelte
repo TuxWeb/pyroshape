@@ -23,6 +23,8 @@
   let sessionChecked = false;
   let project: ProjectDetail | null = null;
   let loading = false;
+  let loadingProjectId: number | null = null;
+  let loadRequestToken = 0;
   let loaded = false;
   let loadedProjectId: number | null = null;
   let error = '';
@@ -49,11 +51,20 @@
     errorStatus = null;
   }
 
-  $: if (sessionChecked && $session.authenticated && !invalidProjectId && !loaded && !loading) {
+  $: if (
+    sessionChecked &&
+    $session.authenticated &&
+    !invalidProjectId &&
+    !loaded &&
+    loadingProjectId !== projectId
+  ) {
     loadProject();
   }
 
   $: if (!$session.authenticated || invalidProjectId) {
+    loadRequestToken += 1;
+    loading = false;
+    loadingProjectId = null;
     project = null;
     loaded = false;
     loadedProjectId = null;
@@ -67,28 +78,45 @@
   });
 
   async function loadProject() {
+    const requestedProjectId = projectId;
+    const requestToken = loadRequestToken + 1;
+
+    loadRequestToken = requestToken;
     loading = true;
+    loadingProjectId = requestedProjectId;
     error = '';
     errorStatus = null;
     metadataError = '';
     taskError = '';
 
     try {
-      const detail = await getProject(projectId);
+      const detail = await getProject(requestedProjectId);
+
+      if (requestToken !== loadRequestToken || requestedProjectId !== projectId) {
+        return;
+      }
+
       project = detail;
       projectName = detail.name;
       projectDescription = detail.description ?? '';
       taskDrafts = Object.fromEntries(detail.tasks.map((task) => [task.id, task.title]));
       loaded = true;
-      loadedProjectId = projectId;
+      loadedProjectId = requestedProjectId;
     } catch (caught) {
+      if (requestToken !== loadRequestToken || requestedProjectId !== projectId) {
+        return;
+      }
+
       error = caught instanceof ApiError ? caught.message : 'Project could not be loaded.';
       errorStatus = caught instanceof ApiError ? caught.status : null;
       project = null;
       loaded = true;
-      loadedProjectId = projectId;
+      loadedProjectId = requestedProjectId;
     } finally {
-      loading = false;
+      if (requestToken === loadRequestToken && requestedProjectId === projectId) {
+        loading = false;
+        loadingProjectId = null;
+      }
     }
   }
 
@@ -159,6 +187,10 @@
   }
 
   async function removeTask(task: Task) {
+    if (!window.confirm(`Delete "${task.title}"?`)) {
+      return;
+    }
+
     deletingTaskId = task.id;
     taskError = '';
 
