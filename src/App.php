@@ -86,7 +86,8 @@ class App
             $appRoot = dirname($appRoot);
         }
 
-        $containerCacheDir = $appRoot . '/tmp/container/' . $containerCacheKey;
+        $cacheRoot = basename($appRoot) === 'tmp' ? $appRoot : $appRoot . '/tmp';
+        $containerCacheDir = $cacheRoot . '/container/' . $containerCacheKey;
         if (!is_dir($containerCacheDir) && !mkdir($containerCacheDir, 0775, true) && !is_dir($containerCacheDir)) {
             throw new ConfigNotValidException(
                 sprintf('Container cache directory "%s" cannot be created', $containerCacheDir)
