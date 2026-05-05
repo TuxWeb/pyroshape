@@ -52,10 +52,17 @@ class App
 
         if ($basePath !== '') {
             $this->slimApp->setBasePath($basePath);
+            $this->container->get(LoggerInterface::class)->notice('app.base_path_enabled', [
+                'base_path' => $basePath,
+            ]);
         }
 
         $this->setupMiddleware();
         $this->setupRoutes();
+        $this->container->get(LoggerInterface::class)->info('app.initialized', [
+            'environment' => (string) ($this->container->get('settings')['environment'] ?? 'development'),
+            'base_path' => (string) $basePath,
+        ]);
     }
 
     public function getSlimApp(): SlimApp
@@ -209,6 +216,7 @@ class App
 
         $this->setupAppRoutes();
         $this->setupSpaRoutes();
+        $this->container->get(LoggerInterface::class)->info('app.routes_registered');
     }
 
     protected function setupAppRoutes(): void
@@ -247,6 +255,9 @@ class App
 
         $indexFile = $this->frontendAppPath() . '/index.html';
         if (!is_file($indexFile) || !is_readable($indexFile)) {
+            $this->container->get(LoggerInterface::class)->warning('spa.fallback_missing_index', [
+                'path' => $indexFile,
+            ]);
             throw new HttpNotFoundException($request);
         }
 
@@ -268,6 +279,9 @@ class App
             || !is_file($file)
             || !str_starts_with($file, $baseDir . DIRECTORY_SEPARATOR)
         ) {
+            $this->container->get(LoggerInterface::class)->warning('spa.asset_not_found', [
+                'asset' => $asset,
+            ]);
             throw new HttpNotFoundException($request);
         }
 

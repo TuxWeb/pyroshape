@@ -10,11 +10,12 @@ use InvalidArgumentException;
 use PDOException;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Log\LoggerInterface;
 use RuntimeException;
 
 class AuthController
 {
-    public function __construct(private AuthService $auth)
+    public function __construct(private AuthService $auth, private LoggerInterface $logger)
     {
     }
 
@@ -31,14 +32,27 @@ class AuthController
                     'surname' => $body['surname'] ?? null,
                 ]
             );
+            $this->logger->info('auth.registered', $this->userLogContext($payload));
 
             return $this->json($response, $payload, 201);
         } catch (InvalidArgumentException $exception) {
+            $this->logger->warning('auth.register_rejected', [
+                'reason' => $exception->getMessage(),
+            ]);
+
             return $this->jsonError($response, $exception->getMessage(), 400);
         } catch (PDOException $exception) {
             if ($this->isDuplicateEmailError($exception)) {
+                $this->logger->notice('auth.register_duplicate_email', [
+                    'email' => $this->loggableEmail($body['email'] ?? null),
+                ]);
+
                 return $this->jsonError($response, 'Email address is already registered', 409);
             }
+
+            $this->logger->error('auth.register_failed', [
+                'exception' => $exception::class,
+            ]);
 
             throw $exception;
         }
@@ -49,9 +63,14 @@ class AuthController
         try {
             $token = $request->getQueryParams()['token'] ?? '';
             $payload = $this->auth->verifyEmailToken(is_string($token) ? $token : '');
+            $this->logger->notice('auth.email_verified', $this->userLogContext($payload));
 
             return $this->json($response, $payload);
         } catch (InvalidArgumentException | RuntimeException $exception) {
+            $this->logger->warning('auth.email_verification_failed', [
+                'reason' => $exception->getMessage(),
+            ]);
+
             return $this->jsonError($response, $exception->getMessage(), 400);
         }
     }
@@ -66,15 +85,25 @@ class AuthController
                 $response
             );
             $response = $this->payloadResponse($payload, $response);
+            $this->logger->info('auth.login_succeeded', $this->userLogContext($payload));
 
             return $this->json($response, $this->withoutResponse($payload));
         } catch (AuthException $exception) {
             $message = $exception->statusCode() === 401
                 ? 'Invalid email or password'
                 : 'Authentication is not available for this account';
+            $this->logger->warning('auth.login_failed', [
+                'email' => $this->loggableEmail($body['email'] ?? null),
+                'status' => $exception->statusCode(),
+            ]);
 
             return $this->jsonError($response, $message, $exception->statusCode());
         } catch (InvalidArgumentException) {
+            $this->logger->warning('auth.login_failed', [
+                'email' => $this->loggableEmail($body['email'] ?? null),
+                'status' => 401,
+            ]);
+
             return $this->jsonError($response, 'Invalid email or password', 401);
         }
     }
@@ -82,11 +111,17 @@ class AuthController
     public function postLogout(Request $request, Response $response): Response
     {
         if (!$this->hasValidSameOriginHeader($request)) {
+            $this->logger->warning('auth.logout_forbidden_origin', [
+                'origin' => $request->getHeaderLine('Origin'),
+                'host' => $request->getHeaderLine('Host'),
+            ]);
+
             return $this->jsonError($response, 'Forbidden', 403);
         }
 
         $payload = $this->auth->logout($request, $response);
         $response = $this->payloadResponse($payload, $response);
+        $this->logger->info('auth.logout_succeeded');
 
         return $this->json($response, ['authenticated' => false]);
     }
@@ -251,5 +286,33 @@ class AuthController
             || $driverCode === '1062'
             || str_contains($message, 'unique')
             || str_contains($message, 'duplicate');
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function userLogContext(array $payload): array
+    {
+        $context = [];
+        if (isset($payload['id'])) {
+            $context['user_id'] = (int) $payload['id'];
+        }
+        if (isset($payload['email'])) {
+            $context['email'] = $this->loggableEmail($payload['email']);
+        }
+
+        return $context;
+    }
+
+    private function loggableEmail(mixed $email): ?string
+    {
+        if (!is_string($email)) {
+            return null;
+        }
+
+        $email = trim(strtolower($email));
+
+        return $email === '' ? null : $email;
     }
 }
