@@ -14,7 +14,7 @@ return [
             'path' => __DIR__ . '/../logs/app.log',
             'level' => Logger::DEBUG,
             'dateFormat' => 'Y-m-d H:i:s',
-            'logFormat' => "%datetime% [%channel%.%level_name% %extra%] %message%\n",
+            'logFormat' => "%datetime% [%channel%.%level_name% %extra%] %message% %context%\n",
             'timezone' => 'Europe/Rome',
         ],
         'accessLogger' => [
