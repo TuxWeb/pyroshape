@@ -86,17 +86,18 @@ class App
             $appRoot = dirname($appRoot);
         }
 
-        $cacheRoot = basename($appRoot) === 'tmp' ? $appRoot : $appRoot . '/tmp';
-        $containerCacheDir = $cacheRoot . '/container/' . $containerCacheKey;
-        if (!is_dir($containerCacheDir) && !mkdir($containerCacheDir, 0775, true) && !is_dir($containerCacheDir)) {
-            throw new ConfigNotValidException(
-                sprintf('Container cache directory "%s" cannot be created', $containerCacheDir)
-            );
-        }
+        if (basename($appRoot) !== 'tmp') {
+            $containerCacheDir = $appRoot . '/tmp/container/' . $containerCacheKey;
+            if (!is_dir($containerCacheDir) && !mkdir($containerCacheDir, 0775, true) && !is_dir($containerCacheDir)) {
+                throw new ConfigNotValidException(
+                    sprintf('Container cache directory "%s" cannot be created', $containerCacheDir)
+                );
+            }
 
-        $compiledContainerClass = 'PyroshapeCompiledContainer' . substr($containerCacheKey, 0, 16);
-        $builder->enableCompilation($containerCacheDir, $compiledContainerClass);
-        $builder->writeProxiesToFile(true, $containerCacheDir . '/proxies');
+            $compiledContainerClass = 'PyroshapeCompiledContainer' . substr($containerCacheKey, 0, 16);
+            $builder->enableCompilation($containerCacheDir, $compiledContainerClass);
+            $builder->writeProxiesToFile(true, $containerCacheDir . '/proxies');
+        }
         $builder->addDefinitions($configFile);
         $builder->addDefinitions([
             AppLogger::class => function (ContainerInterface $container): AppLogger {
