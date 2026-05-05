@@ -99,6 +99,8 @@ final class LoggingTestAuthService extends AuthService
     public array $loginPayload = [];
     /** @var array<string, mixed> */
     public array $logoutPayload = [];
+    /** @var array<string, mixed> */
+    public array $sessionPayload = [];
     public ?AuthException $loginException = null;
 
     public function __construct()
@@ -129,6 +131,11 @@ final class LoggingTestAuthService extends AuthService
     public function logout(ServerRequestInterface $request, ResponseInterface $response): array
     {
         return $this->logoutPayload + ['response' => $response];
+    }
+
+    public function getSession(ServerRequestInterface $request, ResponseInterface $response): array
+    {
+        return $this->sessionPayload + ['response' => $response];
     }
 }
 
@@ -186,7 +193,11 @@ $controller->postLogout(
 );
 assertLog($logger, 'warning', 'auth.logout_forbidden_origin', ['origin' => 'https://evil.example.test']);
 
-$auth->logoutPayload = ['authenticated' => false];
+$auth->logoutPayload = [
+    'authenticated' => false,
+    'id' => 42,
+    'email' => 'user@example.test',
+];
 $controller->postLogout(
     (new ServerRequestFactory())
         ->createServerRequest('POST', '/api/auth/logout')
@@ -194,6 +205,17 @@ $controller->postLogout(
         ->withHeader('Origin', 'http://app.example.test'),
     new Response()
 );
-assertLog($logger, 'info', 'auth.logout_succeeded', []);
+assertLog($logger, 'info', 'auth.logout_succeeded', ['user_id' => 42, 'email' => 'user@example.test']);
+
+$auth->sessionPayload = [
+    'authenticated' => true,
+    'id' => 42,
+    'email' => 'user@example.test',
+];
+$controller->getSession(
+    (new ServerRequestFactory())->createServerRequest('GET', '/api/session'),
+    new Response()
+);
+assertLog($logger, 'debug', 'auth.session_authenticated', ['user_id' => 42, 'email' => 'user@example.test']);
 
 echo "auth controller logging ok\n";

@@ -59,7 +59,7 @@ class App
 
         $this->setupMiddleware();
         $this->setupRoutes();
-        $this->container->get(LoggerInterface::class)->info('app.initialized', [
+        $this->container->get(LoggerInterface::class)->debug('app.initialized', [
             'environment' => (string) ($this->container->get('settings')['environment'] ?? 'development'),
             'base_path' => (string) $basePath,
         ]);
@@ -216,7 +216,7 @@ class App
 
         $this->setupAppRoutes();
         $this->setupSpaRoutes();
-        $this->container->get(LoggerInterface::class)->info('app.routes_registered');
+        $this->container->get(LoggerInterface::class)->debug('app.routes_registered');
     }
 
     protected function setupAppRoutes(): void

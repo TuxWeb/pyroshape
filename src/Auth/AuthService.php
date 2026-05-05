@@ -14,6 +14,8 @@ use JsonException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use RuntimeException;
 use Throwable;
 
@@ -22,10 +24,14 @@ class AuthService
     private const DUMMY_BCRYPT_HASH = '$2y$12$bNmI7bFzmrJZM12sQOMC5eNZ0BBFxS0.XdKyRcKLbC8vcLMGHWkPq';
 
     private ?UserRepository $users;
+    private LoggerInterface $logger;
 
     public function __construct(private ContainerInterface $container, ?UserRepository $users = null)
     {
         $this->users = $users;
+        $this->logger = $container->has(LoggerInterface::class)
+            ? $container->get(LoggerInterface::class)
+            : new NullLogger();
     }
 
     /**
@@ -119,6 +125,7 @@ class AuthService
         );
 
         $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT());
+        $this->logTokenIssued($user, (string) $refreshClaims->jti);
 
         return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($user);
     }
@@ -177,9 +184,19 @@ class AuthService
             $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
             $accessToken = $refreshContext['refreshToken']->getAccessToken();
             $response = $this->setLoginCookie($response, $bundle['refreshToken'], $accessToken->getTokenJWT());
+            $this->logTokenIssued(
+                $refreshContext['user'],
+                (string) $refreshContext['refreshToken']->getToken()->jti,
+                'access_refresh'
+            );
 
             return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($refreshContext['user']);
-        } catch (Throwable) {
+        } catch (Throwable $throwable) {
+            $this->logger->warning('auth.refresh_token_rejected', [
+                'reason' => $throwable->getMessage(),
+                'exception' => $throwable::class,
+            ]);
+
             return $this->unauthenticated($response, true);
         }
     }
@@ -459,5 +476,18 @@ class AuthService
         }
 
         return $integer;
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     */
+    private function logTokenIssued(array $user, string $refreshTokenJti, string $reason = 'login'): void
+    {
+        $this->logger->notice('auth.token_issued', [
+            'user_id' => (int) $user['id'],
+            'email' => (string) $user['email'],
+            'refresh_token_jti' => $refreshTokenJti,
+            'reason' => $reason,
+        ]);
     }
 }

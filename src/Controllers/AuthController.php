@@ -121,7 +121,7 @@ class AuthController
 
         $payload = $this->auth->logout($request, $response);
         $response = $this->payloadResponse($payload, $response);
-        $this->logger->info('auth.logout_succeeded');
+        $this->logger->info('auth.logout_succeeded', $this->userLogContext($payload));
 
         return $this->json($response, ['authenticated' => false]);
     }
@@ -130,6 +130,9 @@ class AuthController
     {
         $payload = $this->auth->getSession($request, $response);
         $response = $this->payloadResponse($payload, $response);
+        if (($payload['authenticated'] ?? false) === true) {
+            $this->logger->debug('auth.session_authenticated', $this->userLogContext($payload));
+        }
 
         return $this->json($response, $this->withoutResponse($payload));
     }
