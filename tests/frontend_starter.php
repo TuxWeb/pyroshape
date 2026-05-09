@@ -33,6 +33,11 @@ assertContains($session, 'sessionRequestId', 'session helper guards stale respon
 $layout = readProjectFile($root, 'frontend/src/routes/+layout.svelte');
 assertContains($layout, 'AppShell', 'root layout uses reusable AppShell');
 
+$loginPage = readProjectFile($root, 'frontend/src/routes/login/+page.svelte');
+assertContains($loginPage, 'ensureSessionLoaded', 'login page checks existing session');
+assertContains($loginPage, 'current.authenticated', 'login page checks authenticated state');
+assertContains($loginPage, "goto('/dashboard')", 'login page redirects authenticated users to dashboard');
+
 $delivery = readProjectFile($root, 'docs/ai-delivery.md');
 assertContains($delivery, 'vertical slice', 'AI delivery guide documents vertical slice workflow');
 assertContains($delivery, 'Do not add app domain code to pyroshape-core', 'AI delivery guide protects core boundary');

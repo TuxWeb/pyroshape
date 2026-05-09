@@ -1,7 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
   import { ApiError, apiJson } from '$lib/api';
-  import { loadSession, type Session } from '$lib/session';
+  import { ensureSessionLoaded, loadSession, type Session } from '$lib/session';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
@@ -12,6 +13,13 @@
   let password = '';
   let error = '';
   let submitting = false;
+
+  onMount(async () => {
+    const current = await ensureSessionLoaded();
+    if (current.authenticated) {
+      await goto('/dashboard');
+    }
+  });
 
   async function submit() {
     error = '';
