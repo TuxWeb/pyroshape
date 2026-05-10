@@ -102,6 +102,7 @@ final class LoggingTestAuthService extends AuthService
     /** @var array<string, mixed> */
     public array $sessionPayload = [];
     public ?AuthException $loginException = null;
+    public ?bool $loginRememberMe = null;
 
     public function __construct()
     {
@@ -117,8 +118,10 @@ final class LoggingTestAuthService extends AuthService
         return $this->verifyPayload;
     }
 
-    public function login(string $email, string $password, ResponseInterface $response): array
+    public function login(string $email, string $password, ResponseInterface $response, bool $rememberMe = false): array
     {
+        $this->loginRememberMe = $rememberMe;
+
         if ($this->loginException !== null) {
             $exception = $this->loginException;
             $this->loginException = null;
@@ -174,8 +177,12 @@ $auth->loginPayload = [
 $controller->postLogin(jsonRequest('/api/auth/login', [
     'email' => 'user@example.test',
     'password' => 'secret123',
+    'rememberMe' => true,
 ]), new Response());
 assertLog($logger, 'info', 'auth.login_succeeded', ['user_id' => 42, 'email' => 'user@example.test']);
+if ($auth->loginRememberMe !== true) {
+    throw new RuntimeException('Login controller did not pass rememberMe=true to auth service');
+}
 
 $auth->loginException = new AuthException('Invalid email or password', 401);
 $controller->postLogin(jsonRequest('/api/auth/login', [

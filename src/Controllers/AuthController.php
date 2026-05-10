@@ -82,7 +82,8 @@ class AuthController
             $payload = $this->auth->login(
                 $this->stringField($body, 'email'),
                 $this->stringField($body, 'password'),
-                $response
+                $response,
+                $this->boolField($body, 'rememberMe', false)
             );
             $response = $this->payloadResponse($payload, $response);
             $this->logger->info('auth.login_succeeded', $this->userLogContext($payload));
@@ -126,6 +127,45 @@ class AuthController
         return $this->json($response, ['authenticated' => false]);
     }
 
+    public function postChangePassword(Request $request, Response $response): Response
+    {
+        if (!$this->hasValidSameOriginHeader($request)) {
+            $this->logger->warning('auth.change_password_forbidden_origin', [
+                'origin' => $request->getHeaderLine('Origin'),
+                'host' => $request->getHeaderLine('Host'),
+            ]);
+
+            return $this->jsonError($response, 'Forbidden', 403);
+        }
+
+        try {
+            $body = $this->requestBody($request);
+            $payload = $this->auth->changePassword(
+                $request,
+                $response,
+                $this->stringField($body, 'currentPassword'),
+                $this->stringField($body, 'newPassword'),
+                $this->stringField($body, 'confirmPassword')
+            );
+            $response = $this->payloadResponse($payload, $response);
+            $this->logger->info('auth.change_password_succeeded', $this->userLogContext($payload));
+
+            return $this->json($response, $this->withoutResponse($payload));
+        } catch (AuthException $exception) {
+            $this->logger->warning('auth.change_password_unauthenticated', [
+                'status' => $exception->statusCode(),
+            ]);
+
+            return $this->jsonError($response, $exception->getMessage(), $exception->statusCode());
+        } catch (InvalidArgumentException $exception) {
+            $this->logger->warning('auth.change_password_rejected', [
+                'reason' => $exception->getMessage(),
+            ]);
+
+            return $this->jsonError($response, $exception->getMessage(), 400);
+        }
+    }
+
     public function getSession(Request $request, Response $response): Response
     {
         $payload = $this->auth->getSession($request, $response);
@@ -165,6 +205,20 @@ class AuthController
         $value = $body[$name] ?? '';
 
         return is_string($value) ? $value : '';
+    }
+
+    /**
+     * @param array<string, mixed> $body
+     */
+    private function boolField(array $body, string $name, bool $default): bool
+    {
+        if (!array_key_exists($name, $body)) {
+            return $default;
+        }
+
+        $value = $body[$name];
+
+        return $value === true || $value === 1 || $value === '1' || $value === 'true' || $value === 'on';
     }
 
     /**

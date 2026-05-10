@@ -94,6 +94,7 @@ class App
         }
 
         if (basename($appRoot) !== 'tmp') {
+            $this->pruneStaleContainerCaches($appRoot, $containerCacheKey);
             $containerCacheDir = $appRoot . '/tmp/container/' . $containerCacheKey;
             if (!is_dir($containerCacheDir) && !mkdir($containerCacheDir, 0775, true) && !is_dir($containerCacheDir)) {
                 throw new ConfigNotValidException(
@@ -143,6 +144,67 @@ class App
         ]);
 
         return $builder->build();
+    }
+
+    private function pruneStaleContainerCaches(string $appRoot, string $activeCacheKey): void
+    {
+        $cacheRoot = $appRoot . '/tmp/container';
+        if (is_dir($cacheRoot)) {
+            foreach (glob($cacheRoot . '/*', GLOB_ONLYDIR) ?: [] as $cacheDir) {
+                if (basename($cacheDir) === $activeCacheKey) {
+                    continue;
+                }
+
+                $this->removeDirectory($cacheDir);
+            }
+        }
+
+        $this->pruneNestedContainerCacheRoots($appRoot);
+    }
+
+    private function pruneNestedContainerCacheRoots(string $appRoot): void
+    {
+        $tmpRoot = $appRoot . '/tmp';
+        if (!is_dir($tmpRoot)) {
+            return;
+        }
+
+        $activeCacheRoot = realpath($tmpRoot . '/container') ?: null;
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($tmpRoot, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if (!$item->isDir() || $item->getFilename() !== 'container') {
+                continue;
+            }
+
+            $containerRoot = realpath((string) $item->getPathname());
+            if ($containerRoot === false || $containerRoot === $activeCacheRoot) {
+                continue;
+            }
+
+            $this->removeDirectory($containerRoot);
+        }
+    }
+
+    private function removeDirectory(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            $item->isDir() ? rmdir((string) $item->getPathname()) : unlink((string) $item->getPathname());
+        }
+
+        rmdir($path);
     }
 
     private function validateSecuritySettings(): void
@@ -212,6 +274,8 @@ class App
             ->setName('auth.verify-email');
         $this->slimApp->post('/api/auth/login', [AuthController::class, 'postLogin'])->setName('auth.login');
         $this->slimApp->post('/api/auth/logout', [AuthController::class, 'postLogout'])->setName('auth.logout');
+        $this->slimApp->post('/api/auth/change-password', [AuthController::class, 'postChangePassword'])
+            ->setName('auth.change-password');
         $this->slimApp->get('/api/session', [AuthController::class, 'getSession'])->setName('session');
 
         $this->setupAppRoutes();

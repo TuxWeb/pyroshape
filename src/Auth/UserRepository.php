@@ -110,6 +110,50 @@ class UserRepository
         return $statement->rowCount() > 0;
     }
 
+    public function changePasswordAndRevokeOtherRefreshTokens(
+        int $userId,
+        string $passwordHash,
+        string $keepRefreshTokenJti,
+        ?string $timestamp = null
+    ): void {
+        $now = $timestamp ?? $this->now();
+
+        $this->pdo->beginTransaction();
+        try {
+            $updateUser = $this->pdo->prepare(
+                'UPDATE users
+                 SET pwdhash = :pwdhash, updated_at = :updated_at
+                 WHERE id = :id'
+            );
+            $updateUser->execute([
+                'id' => $userId,
+                'pwdhash' => $passwordHash,
+                'updated_at' => $now,
+            ]);
+
+            $revokeTokens = $this->pdo->prepare(
+                'UPDATE auth_tokens
+                 SET revocation_time = :revocation_time
+                 WHERE users_id = :users_id
+                   AND jti <> :keep_jti
+                   AND revocation_time IS NULL'
+            );
+            $revokeTokens->execute([
+                'users_id' => $userId,
+                'keep_jti' => $keepRefreshTokenJti,
+                'revocation_time' => $now,
+            ]);
+
+            $this->pdo->commit();
+        } catch (Throwable $throwable) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $throwable;
+        }
+    }
+
     public function findValidRefreshToken(string $jti, string $tokenHash, ?string $now = null): ?array
     {
         $statement = $this->pdo->prepare(

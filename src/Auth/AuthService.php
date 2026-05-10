@@ -91,7 +91,7 @@ class AuthService
     /**
      * @return array<string, mixed>
      */
-    public function login(string $email, string $password, ResponseInterface $response): array
+    public function login(string $email, string $password, ResponseInterface $response, bool $rememberMe = false): array
     {
         $this->assertValidPassword($password);
 
@@ -124,7 +124,7 @@ class AuthService
             $this->dateFromUnix((int) $refreshClaims->exp)
         );
 
-        $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT());
+        $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT(), $rememberMe);
         $this->logTokenIssued($user, (string) $refreshClaims->jti);
 
         return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($user);
@@ -177,13 +177,64 @@ class AuthService
     /**
      * @return array<string, mixed>
      */
+    public function changePassword(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $currentPassword,
+        string $newPassword,
+        string $confirmPassword
+    ): array {
+        try {
+            $bundle = $this->readCookieBundle($request);
+            $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
+        } catch (Throwable) {
+            throw new AuthException('Authentication required', 401);
+        }
+
+        $user = $refreshContext['user'];
+        if (!is_string($user['pwdhash']) || !password_verify($currentPassword, $user['pwdhash'])) {
+            throw new InvalidArgumentException('Current password is incorrect');
+        }
+
+        $this->assertValidNewPassword($newPassword, $confirmPassword, $user['pwdhash']);
+        $refreshJti = (string) $refreshContext['refreshToken']->getToken()->jti;
+        $newPasswordHash = password_hash($newPassword, PASSWORD_BCRYPT);
+        $this->users()->changePasswordAndRevokeOtherRefreshTokens(
+            (int) $user['id'],
+            $newPasswordHash,
+            $refreshJti,
+            $this->now()
+        );
+        $updatedUser = $this->users()->findUserById((int) $user['id']) ?? $user;
+
+        $this->logger->notice('auth.password_changed', [
+            'user_id' => (int) $user['id'],
+            'email' => (string) $user['email'],
+            'refresh_token_jti' => $refreshJti,
+        ]);
+
+        return [
+            'changed' => true,
+            'authenticated' => true,
+            'response' => $response,
+        ] + $this->safeUserFields($updatedUser);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function refreshExpiredAccessToken(ServerRequestInterface $request, ResponseInterface $response): array
     {
         try {
             $bundle = $this->readCookieBundle($request);
             $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
             $accessToken = $refreshContext['refreshToken']->getAccessToken();
-            $response = $this->setLoginCookie($response, $bundle['refreshToken'], $accessToken->getTokenJWT());
+            $response = $this->setLoginCookie(
+                $response,
+                $bundle['refreshToken'],
+                $accessToken->getTokenJWT(),
+                $bundle['rememberMe']
+            );
             $this->logTokenIssued(
                 $refreshContext['user'],
                 (string) $refreshContext['refreshToken']->getToken()->jti,
@@ -231,7 +282,7 @@ class AuthService
     }
 
     /**
-     * @return array{refreshToken: string, accessToken: string}
+     * @return array{refreshToken: string, accessToken: string, rememberMe: bool}
      */
     private function readCookieBundle(ServerRequestInterface $request): array
     {
@@ -257,15 +308,22 @@ class AuthService
         return [
             'refreshToken' => $bundle['refreshToken'],
             'accessToken' => $bundle['accessToken'],
+            'rememberMe' => ($bundle['rememberMe'] ?? false) === true,
         ];
     }
 
-    private function setLoginCookie(ResponseInterface $response, string $refreshJwt, string $accessJwt): ResponseInterface
+    private function setLoginCookie(
+        ResponseInterface $response,
+        string $refreshJwt,
+        string $accessJwt,
+        bool $persistent = false
+    ): ResponseInterface
     {
-        $cookie = $this->loginCookieSettings();
+        $cookie = $this->loginCookieSettings($persistent);
         $payload = json_encode([
             'refreshToken' => $refreshJwt,
             'accessToken' => $accessJwt,
+            'rememberMe' => $persistent,
         ], JSON_THROW_ON_ERROR);
         if (!is_string($payload)) {
             throw new JsonException('Failed to encode login cookie payload');
@@ -344,6 +402,23 @@ class AuthService
         }
     }
 
+    private function assertValidNewPassword(string $newPassword, string $confirmPassword, string $currentPasswordHash): void
+    {
+        $this->assertValidPassword($newPassword);
+
+        if (strlen($newPassword) < 8) {
+            throw new InvalidArgumentException('New password must be at least 8 characters');
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            throw new InvalidArgumentException('Password confirmation does not match');
+        }
+
+        if (password_verify($newPassword, $currentPasswordHash)) {
+            throw new InvalidArgumentException('New password must be different from current password');
+        }
+    }
+
     private function users(): UserRepository
     {
         if (!$this->users instanceof UserRepository) {
@@ -412,7 +487,7 @@ class AuthService
     /**
      * @return array{name: string, key: string, salt: string, options: array<string, mixed>}
      */
-    private function loginCookieSettings(): array
+    private function loginCookieSettings(bool $persistent = true): array
     {
         $settings = $this->settings();
         $cookie = $settings['login_cookie'] ?? [];
@@ -438,7 +513,7 @@ class AuthService
             }
         }
 
-        $ttl = $cookie['ttl'] ?? null;
+        $ttl = $persistent ? $this->persistentCookieTtl($settings, $cookie) : null;
         if ($ttl !== null) {
             $options['expires'] = time() + $this->positiveInteger($ttl, 'login_cookie.ttl');
         }
@@ -449,6 +524,32 @@ class AuthService
             'salt' => $salt,
             'options' => $options,
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $settings
+     * @param array<string, mixed> $cookie
+     */
+    private function persistentCookieTtl(array $settings, array $cookie): mixed
+    {
+        if (array_key_exists('ttl', $cookie)) {
+            return $cookie['ttl'];
+        }
+
+        $refreshToken = $settings['jwt_refresh_token'] ?? [];
+        if (!is_array($refreshToken)) {
+            return null;
+        }
+
+        $ttl = $refreshToken['expire'] ?? $refreshToken['ttl'] ?? null;
+        $timeSkew = $refreshToken['time_skew'] ?? 0;
+        if ((is_int($ttl) || (is_string($ttl) && ctype_digit($ttl)))
+            && (is_int($timeSkew) || (is_string($timeSkew) && ctype_digit($timeSkew)))
+        ) {
+            return (int) $ttl + (int) $timeSkew;
+        }
+
+        return $ttl;
     }
 
     /**
