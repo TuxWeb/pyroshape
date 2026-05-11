@@ -27,9 +27,9 @@
       <a href="/" class="text-base font-semibold text-foreground">Pyroshape</a>
 
       <nav class="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-        <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/dashboard">Dashboard</a>
-
         {#if $session.authenticated}
+          <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/dashboard">Dashboard</a>
+          <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/account/password">Password</a>
           <Button variant="ghost" type="button" class="ml-0 min-w-20 sm:ml-2" disabled={loggingOut} on:click={signOut}>
             {loggingOut ? 'Logging out...' : 'Logout'}
           </Button>

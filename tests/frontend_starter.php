@@ -15,6 +15,7 @@ $requiredFiles = [
     'frontend/src/lib/components/ui/LoadingState.svelte',
     'frontend/src/lib/api.ts',
     'frontend/src/lib/session.ts',
+    'frontend/src/routes/account/password/+page.svelte',
     'docs/ai-delivery.md',
     'docs/frontend-style-guide.md',
 ];
@@ -33,10 +34,20 @@ assertContains($session, 'sessionRequestId', 'session helper guards stale respon
 $layout = readProjectFile($root, 'frontend/src/routes/+layout.svelte');
 assertContains($layout, 'AppShell', 'root layout uses reusable AppShell');
 
+$appShell = readProjectFile($root, 'frontend/src/lib/components/layout/AppShell.svelte');
+assertContains($appShell, 'href="/account/password"', 'app shell links authenticated users to password change');
+
 $loginPage = readProjectFile($root, 'frontend/src/routes/login/+page.svelte');
 assertContains($loginPage, 'ensureSessionLoaded', 'login page checks existing session');
 assertContains($loginPage, 'current.authenticated', 'login page checks authenticated state');
 assertContains($loginPage, "goto('/dashboard')", 'login page redirects authenticated users to dashboard');
+
+$passwordPage = readProjectFile($root, 'frontend/src/routes/account/password/+page.svelte');
+assertContains($passwordPage, '/api/auth/change-password', 'password page calls core change-password API');
+assertContains($passwordPage, 'currentPassword', 'password page sends current password');
+assertContains($passwordPage, 'newPassword', 'password page sends new password');
+assertContains($passwordPage, 'confirmPassword', 'password page sends confirmation');
+assertContains($passwordPage, 'ensureSessionLoaded', 'password page requires authenticated session');
 
 $delivery = readProjectFile($root, 'docs/ai-delivery.md');
 assertContains($delivery, 'vertical slice', 'AI delivery guide documents vertical slice workflow');
