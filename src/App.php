@@ -11,6 +11,7 @@ use Dam2k\Pyroshape\Core\Exceptions\ConfigNotValidException;
 use Dam2k\Pyroshape\Core\Exceptions\JsonErrorHandler;
 use Dam2k\Pyroshape\Core\Logger\AccessLogger;
 use Dam2k\Pyroshape\Core\Logger\AppLogger;
+use Dam2k\Pyroshape\Core\Logger\LineLogFormat;
 use Dam2k\Pyroshape\Core\Middlewares\AddDefaultHeaders;
 use Dam2k\Pyroshape\Core\Middlewares\ContentLength;
 use Dam2k\Pyroshape\Core\Middlewares\RemoveTrailingSlash;
@@ -111,7 +112,7 @@ class App
             AppLogger::class => function (ContainerInterface $container): AppLogger {
                 $settings = $container->get('settings')['logger'];
                 $logger = new AppLogger($settings['name']);
-                $formatter = new LineFormatter($settings['logFormat'], $settings['dateFormat']);
+                $formatter = new LineFormatter(LineLogFormat::normalize($settings['logFormat']), $settings['dateFormat']);
                 $handler = new StreamHandler($settings['path'], $settings['level']);
                 $handler->setFormatter($formatter);
                 $logger->pushHandler($handler);
@@ -126,7 +127,7 @@ class App
             AccessLogger::class => function (ContainerInterface $container): AccessLogger {
                 $settings = $container->get('settings')['accessLogger'];
                 $logger = new AccessLogger($settings['name']);
-                $formatter = new LineFormatter($settings['logFormat'], $settings['dateFormat']);
+                $formatter = new LineFormatter(LineLogFormat::normalize($settings['logFormat']), $settings['dateFormat']);
                 $handler = new StreamHandler($settings['path'], $settings['level']);
                 $handler->setFormatter($formatter);
                 $logger->pushHandler($handler);
