@@ -111,18 +111,20 @@ class AuthService
         }
 
         $handler = new TokenHandler($this->container);
-        $handler->generateRefreshToken((string) $user['id'], ['email' => $user['email']]);
+        $handler->generateRefreshToken((string) $user['id'], $this->userTokenClaims($user));
         $refreshToken = $handler->getRefreshToken();
         $accessToken = $refreshToken->getAccessToken();
         $refreshClaims = $refreshToken->getToken();
 
-        $this->users()->storeRefreshToken(
-            (int) $user['id'],
-            (string) $refreshClaims->jti,
-            $this->tokenHash($refreshToken->getTokenJWT()),
-            $this->dateFromUnix((int) $refreshClaims->iat),
-            $this->dateFromUnix((int) $refreshClaims->exp)
-        );
+        if ($this->storeRefreshTokens()) {
+            $this->users()->storeRefreshToken(
+                (int) $user['id'],
+                (string) $refreshClaims->jti,
+                $this->tokenHash($refreshToken->getTokenJWT()),
+                $this->dateFromUnix((int) $refreshClaims->iat),
+                $this->dateFromUnix((int) $refreshClaims->exp)
+            );
+        }
 
         $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT(), $rememberMe);
         $this->logTokenIssued($user, (string) $refreshClaims->jti);
@@ -140,6 +142,13 @@ class AuthService
             $accessToken = new AccessToken($this->container);
             $accessToken->loadAccessTokenFromJWT($bundle['accessToken']);
             $accessClaims = $accessToken->getToken();
+
+            if ($this->statelessSessions()) {
+                return [
+                    'authenticated' => true,
+                    'response' => $response,
+                ] + $this->safeUserFieldsFromClaims($accessClaims);
+            }
 
             $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
             if ((string) $accessClaims->sub !== (string) $refreshContext['user']['id']) {
@@ -227,6 +236,39 @@ class AuthService
     {
         try {
             $bundle = $this->readCookieBundle($request);
+            if ($this->statelessSessions()) {
+                $refreshToken = new RefreshToken($this->container);
+                $refreshToken->loadRefreshTokenFromJWT($bundle['refreshToken']);
+                $refreshClaims = $refreshToken->getToken();
+                $refreshTokenJwt = $bundle['refreshToken'];
+                $rememberMe = $bundle['rememberMe'];
+
+                if ($this->shouldAutoRefreshRefreshToken($refreshClaims)) {
+                    $refreshed = new TokenHandler($this->container);
+                    $refreshed->generateRefreshToken(
+                        (string) $refreshClaims->sub,
+                        $this->customClaims($refreshClaims)
+                    );
+                    $refreshToken = $refreshed->getRefreshToken();
+                    $refreshTokenJwt = $refreshToken->getTokenJWT();
+                    $refreshClaims = $refreshToken->getToken();
+                }
+
+                $accessToken = $refreshToken->getAccessToken();
+                $response = $this->setLoginCookie(
+                    $response,
+                    $refreshTokenJwt,
+                    $accessToken->getTokenJWT(),
+                    $rememberMe
+                );
+                $this->logTokenIssuedFromClaims($refreshClaims, 'access_refresh');
+
+                return [
+                    'authenticated' => true,
+                    'response' => $response,
+                ] + $this->safeUserFieldsFromClaims($refreshClaims);
+            }
+
             $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
             $accessToken = $refreshContext['refreshToken']->getAccessToken();
             $response = $this->setLoginCookie(
@@ -389,6 +431,94 @@ class AuthService
             'name' => $user['name'],
             'surname' => $user['surname'],
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     * @return array<string, mixed>
+     */
+    private function userTokenClaims(array $user): array
+    {
+        return [
+            'email' => (string) $user['email'],
+            'enabled' => (bool) $user['enabled'],
+            'emailVerified' => (bool) $user['email_verified'],
+            'nickname' => $user['nickname'],
+            'name' => $user['name'],
+            'surname' => $user['surname'],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function safeUserFieldsFromClaims(\stdClass $claims): array
+    {
+        return [
+            'id' => (int) $claims->sub,
+            'email' => (string) ($claims->email ?? ''),
+            'enabled' => (bool) ($claims->enabled ?? true),
+            'emailVerified' => (bool) ($claims->emailVerified ?? false),
+            'nickname' => isset($claims->nickname) ? (string) $claims->nickname : null,
+            'name' => isset($claims->name) ? (string) $claims->name : null,
+            'surname' => isset($claims->surname) ? (string) $claims->surname : null,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function customClaims(\stdClass $claims): array
+    {
+        $reservedClaims = array_flip(['iss', 'aud', 'sub', 'iat', 'nbf', 'exp', 'jti']);
+
+        return array_diff_key((array) $claims, $reservedClaims);
+    }
+
+    private function statelessSessions(): bool
+    {
+        $auth = $this->authSettings();
+        $mode = $auth['sessionMode'] ?? $auth['mode'] ?? null;
+
+        if (is_string($mode)) {
+            return strtolower(trim($mode)) === 'stateless';
+        }
+
+        if (array_key_exists('validateRefreshTokenOnEveryRequest', $auth)) {
+            return ($auth['validateRefreshTokenOnEveryRequest'] ?? true) === false;
+        }
+
+        return false;
+    }
+
+    private function storeRefreshTokens(): bool
+    {
+        $auth = $this->authSettings();
+
+        return ($auth['storeRefreshTokens'] ?? true) !== false;
+    }
+
+    private function shouldAutoRefreshRefreshToken(\stdClass $refreshClaims): bool
+    {
+        $settings = $this->settings();
+        $refreshSettings = $settings['jwt_refresh_token'] ?? [];
+        if (!is_array($refreshSettings)) {
+            return false;
+        }
+
+        $autoRefresh = $refreshSettings['auto_refresh'] ?? $refreshSettings['autoRefresh'] ?? 0;
+        if (!is_int($autoRefresh) && !(is_string($autoRefresh) && ctype_digit($autoRefresh))) {
+            return false;
+        }
+
+        $autoRefreshSeconds = (int) $autoRefresh;
+        if ($autoRefreshSeconds <= 0) {
+            return false;
+        }
+
+        $secondsToExpire = (int) $refreshClaims->exp - time();
+
+        return $secondsToExpire > 0 && ($secondsToExpire - $autoRefreshSeconds) < 0;
     }
 
     private function assertValidPassword(string $password): void
@@ -565,6 +695,17 @@ class AuthService
         return $settings;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    private function authSettings(): array
+    {
+        $settings = $this->settings();
+        $auth = $settings['auth'] ?? [];
+
+        return is_array($auth) ? $auth : [];
+    }
+
     private function positiveInteger(mixed $value, string $name): int
     {
         if (!is_int($value) && !(is_string($value) && ctype_digit($value))) {
@@ -588,6 +729,16 @@ class AuthService
             'user_id' => (int) $user['id'],
             'email' => (string) $user['email'],
             'refresh_token_jti' => $refreshTokenJti,
+            'reason' => $reason,
+        ]);
+    }
+
+    private function logTokenIssuedFromClaims(\stdClass $claims, string $reason): void
+    {
+        $this->logger->notice('auth.token_issued', [
+            'user_id' => (int) $claims->sub,
+            'email' => (string) ($claims->email ?? ''),
+            'refresh_token_jti' => (string) $claims->jti,
             'reason' => $reason,
         ]);
     }
