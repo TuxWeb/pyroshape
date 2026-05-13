@@ -205,6 +205,10 @@ $container = new Container([
         'logger' => [
             'level' => Logger::DEBUG,
         ],
+        'auth' => [
+            'sessionMode' => 'stateful',
+            'storeRefreshTokens' => true,
+        ],
         'jwt_refresh_token' => [
             'secret' => hash('sha256', 'refresh-token-key'),
             'algorithm' => 'HS256',
