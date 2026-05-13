@@ -488,14 +488,14 @@ class AuthService
             return ($auth['validateRefreshTokenOnEveryRequest'] ?? true) === false;
         }
 
-        return false;
+        return true;
     }
 
     private function storeRefreshTokens(): bool
     {
         $auth = $this->authSettings();
 
-        return ($auth['storeRefreshTokens'] ?? true) !== false;
+        return ($auth['storeRefreshTokens'] ?? !$this->statelessSessions()) !== false;
     }
 
     private function shouldAutoRefreshRefreshToken(\stdClass $refreshClaims): bool

@@ -118,10 +118,6 @@ $config = [
             'dsn' => 'sqlite:' . $sqliteFile,
             'path' => $sqliteFile,
         ],
-        'auth' => [
-            'sessionMode' => 'stateless',
-            'storeRefreshTokens' => false,
-        ],
         'jwt_refresh_token' => [
             'secret' => hash('sha256', 'stateless-refresh-secret'),
             'ttl' => 60 * 60,

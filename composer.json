@@ -1,7 +1,7 @@
 {
     "name": "dam2k/pyroshape-core",
     "description": "Reusable backend toolkit for Pyroshape applications",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "type": "library",
     "license": "proprietary",
     "authors": [
