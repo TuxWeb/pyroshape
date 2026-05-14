@@ -217,8 +217,8 @@ if (($loginPayload['authenticated'] ?? false) !== true || ($loginPayload['emailV
 }
 
 $tokenCount = (int) $pdo->query('SELECT COUNT(*) FROM auth_tokens')->fetchColumn();
-if ($tokenCount !== 0) {
-    fwrite(STDERR, "Stateless login should not store refresh token rows\n");
+if ($tokenCount !== 1) {
+    fwrite(STDERR, "Stateless login should store refresh token rows\n");
     exit(1);
 }
 
@@ -231,14 +231,25 @@ if (($sessionPayload['authenticated'] ?? false) !== true || ($sessionPayload['en
     exit(1);
 }
 
+$pdo->exec('UPDATE users SET enabled = 1, email_verified = 1 WHERE id = 1');
 sleep(2);
 $refreshedSession = $slim->handle(statelessJsonRequest('GET', '/api/session', null, $cookie));
 statelessAssertStatus($refreshedSession, 200, 'session from refresh token');
 $refreshedPayload = statelessResponseJson($refreshedSession);
 if (($refreshedPayload['authenticated'] ?? false) !== true || ($refreshedPayload['emailVerified'] ?? false) !== true) {
-    fwrite(STDERR, "Stateless refresh did not trust refresh-token claims: " . json_encode($refreshedPayload) . "\n");
+    fwrite(STDERR, "Stateless refresh did not validate the stored refresh token: " . json_encode($refreshedPayload) . "\n");
     exit(1);
 }
 statelessExtractCookie($refreshedSession, $loginCookieName, 'refreshed session');
+
+$pdo->exec('UPDATE auth_tokens SET revocation_time = CURRENT_TIMESTAMP');
+sleep(2);
+$revokedSession = $slim->handle(statelessJsonRequest('GET', '/api/session', null, statelessExtractCookie($refreshedSession, $loginCookieName, 'refreshed session')));
+statelessAssertStatus($revokedSession, 200, 'session from revoked refresh token');
+$revokedPayload = statelessResponseJson($revokedSession);
+if (($revokedPayload['authenticated'] ?? true) !== false) {
+    fwrite(STDERR, "Stateless refresh accepted a revoked refresh token: " . json_encode($revokedPayload) . "\n");
+    exit(1);
+}
 
 echo "auth stateless session ok\n";

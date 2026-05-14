@@ -116,15 +116,7 @@ class AuthService
         $accessToken = $refreshToken->getAccessToken();
         $refreshClaims = $refreshToken->getToken();
 
-        if ($this->storeRefreshTokens()) {
-            $this->users()->storeRefreshToken(
-                (int) $user['id'],
-                (string) $refreshClaims->jti,
-                $this->tokenHash($refreshToken->getTokenJWT()),
-                $this->dateFromUnix((int) $refreshClaims->iat),
-                $this->dateFromUnix((int) $refreshClaims->exp)
-            );
-        }
+        $this->storeRefreshTokenForUser((int) $user['id'], $refreshToken);
 
         $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT(), $rememberMe);
         $this->logTokenIssued($user, (string) $refreshClaims->jti);
@@ -237,13 +229,14 @@ class AuthService
         try {
             $bundle = $this->readCookieBundle($request);
             if ($this->statelessSessions()) {
-                $refreshToken = new RefreshToken($this->container);
-                $refreshToken->loadRefreshTokenFromJWT($bundle['refreshToken']);
+                $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
+                $refreshToken = $refreshContext['refreshToken'];
                 $refreshClaims = $refreshToken->getToken();
                 $refreshTokenJwt = $bundle['refreshToken'];
                 $rememberMe = $bundle['rememberMe'];
 
                 if ($this->shouldAutoRefreshRefreshToken($refreshClaims)) {
+                    $oldRefreshJti = (string) $refreshClaims->jti;
                     $refreshed = new TokenHandler($this->container);
                     $refreshed->generateRefreshToken(
                         (string) $refreshClaims->sub,
@@ -252,6 +245,8 @@ class AuthService
                     $refreshToken = $refreshed->getRefreshToken();
                     $refreshTokenJwt = $refreshToken->getTokenJWT();
                     $refreshClaims = $refreshToken->getToken();
+                    $this->storeRefreshTokenForUser((int) $refreshContext['user']['id'], $refreshToken);
+                    $this->users()->revokeRefreshTokenByJti($oldRefreshJti, $this->now());
                 }
 
                 $accessToken = $refreshToken->getAccessToken();
@@ -491,11 +486,16 @@ class AuthService
         return true;
     }
 
-    private function storeRefreshTokens(): bool
+    private function storeRefreshTokenForUser(int $userId, RefreshToken $refreshToken): void
     {
-        $auth = $this->authSettings();
-
-        return ($auth['storeRefreshTokens'] ?? !$this->statelessSessions()) !== false;
+        $claims = $refreshToken->getToken();
+        $this->users()->storeRefreshToken(
+            $userId,
+            (string) $claims->jti,
+            $this->tokenHash($refreshToken->getTokenJWT()),
+            $this->dateFromUnix((int) $claims->iat),
+            $this->dateFromUnix((int) $claims->exp)
+        );
     }
 
     private function shouldAutoRefreshRefreshToken(\stdClass $refreshClaims): bool

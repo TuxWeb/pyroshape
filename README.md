@@ -37,7 +37,7 @@ In a consuming app `composer.json`, add:
     }
   ],
   "require": {
-    "dam2k/pyroshape-core": "^0.1"
+    "dam2k/pyroshape-core": "^0.7"
   }
 }
 ```
@@ -152,7 +152,7 @@ Example VCS repository:
     }
   ],
   "require": {
-    "dam2k/pyroshape-core": "^0.1"
+    "dam2k/pyroshape-core": "^0.7"
   }
 }
 ```
