@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "dam2k/pyroshape-core": "^0.1"
+        "dam2k/pyroshape-core": "^0.7"
     },
     "repositories": [
       {
