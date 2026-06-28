@@ -108,13 +108,14 @@ Core files/patterns from the demo:
 - `frontend/src/lib/domain/<domain>.ts`: typed API client per domain.
 - Routes should stay thin: load state, call domain client, compose UI components.
 
-## Flowbite MCP
+## Flowbite Svelte
 
-When Flowbite MCP is configured, use it as UI/component guidance for Tailwind/Svelte implementation. Keep the hybrid approach:
+Use Flowbite Svelte as the project's Svelte/Tailwind component library. The frontend follows the official quickstart setup:
 
-- Ask Flowbite MCP for component/layout patterns when the user wants a polished admin/SaaS UI.
-- Implement final code as local Svelte primitives under `frontend/src/lib/components/`.
-- Do not add `flowbite-svelte` casually. Use local Svelte primitives for simple app-specific controls, but prefer `flowbite-svelte` when the app needs reusable complex UI widgets such as dropdowns, tabs, drawers, tooltips, popovers, pagination, toasts, accordions, datepickers, or accessible modal/menu behavior. Get user approval before adding the dependency, then keep app pages insulated through local wrappers when that reduces coupling.
+- Keep `flowbite-svelte` and `flowbite` installed as frontend dev dependencies.
+- Configure `frontend/src/app.css` with Tailwind CSS, `@plugin 'flowbite/plugin'`, and `@source "../node_modules/flowbite-svelte/dist"`.
+- Import Flowbite Svelte components directly for reusable complex UI widgets such as dropdowns, tabs, drawers, tooltips, popovers, pagination, toasts, accordions, datepickers, modals, or accessible menu behavior.
+- Keep app pages insulated through local wrappers under `frontend/src/lib/components/` when that reduces coupling or preserves Pyroshape-specific styling.
 - Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, and no frontend code in `pyroshape-core`.
 - Promote only generic reusable primitives back to `pyroshape-skeleton`; keep demo/domain pages in `pyroshape-demo`.
 

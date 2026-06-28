@@ -57,6 +57,23 @@ $styleGuide = readProjectFile($root, 'docs/frontend-style-guide.md');
 assertContains($styleGuide, 'Target app', 'frontend style guide documents target app adaptation');
 assertContains($styleGuide, 'Reusable primitives', 'frontend style guide documents reusable primitives');
 
+$projectSkill = readProjectFile($root, 'SKILL.md');
+$retiredFlowbiteGuidance = 'Flowbite ' . 'M' . 'CP';
+assertNotContains($projectSkill, $retiredFlowbiteGuidance, 'project guidance does not reference retired Flowbite integration');
+assertNotContains($projectSkill, 'Ask ' . $retiredFlowbiteGuidance, 'project guidance does not instruct agents to use retired Flowbite integration');
+assertContains($projectSkill, 'Flowbite Svelte', 'project guidance documents Flowbite Svelte');
+assertContains($projectSkill, 'flowbite-svelte', 'project guidance references the Flowbite Svelte package');
+
+$package = json_decode(readProjectFile($root, 'frontend/package.json'), true);
+if (! is_array($package)) {
+    fwrite(STDERR, "Unable to decode frontend/package.json\n");
+    exit(1);
+}
+
+$devDependencies = $package['devDependencies'] ?? [];
+assertArrayHasKey($devDependencies, 'flowbite', 'frontend package includes Flowbite');
+assertArrayHasKey($devDependencies, 'flowbite-svelte', 'frontend package includes Flowbite Svelte');
+
 echo "frontend starter ok\n";
 
 function readProjectFile(string $root, string $file): string
@@ -79,6 +96,25 @@ function assertContains(string $haystack, string $needle, string $label): void
 {
     if (!str_contains($haystack, $needle)) {
         fwrite(STDERR, "Missing expected content: {$label}\n");
+        exit(1);
+    }
+}
+
+function assertNotContains(string $haystack, string $needle, string $label): void
+{
+    if (str_contains($haystack, $needle)) {
+        fwrite(STDERR, "Unexpected content: {$label}\n");
+        exit(1);
+    }
+}
+
+/**
+ * @param array<string, mixed> $array
+ */
+function assertArrayHasKey(array $array, string $key, string $label): void
+{
+    if (!array_key_exists($key, $array)) {
+        fwrite(STDERR, "Missing expected key: {$label}\n");
         exit(1);
     }
 }
