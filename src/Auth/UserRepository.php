@@ -26,7 +26,7 @@ class UserRepository
             'INSERT INTO users
                 (email, pwdhash, enabled, email_verified, nickname, name, surname, created_at, updated_at)
              VALUES
-                (:email, :pwdhash, 0, 0, :nickname, :name, :surname, :created_at, :updated_at)'
+                (:email, :pwdhash, FALSE, FALSE, :nickname, :name, :surname, :created_at, :updated_at)'
         );
         $statement->execute([
             'email' => $normalizedEmail,
@@ -64,7 +64,7 @@ class UserRepository
         $now = $verifiedAt ?? $this->now();
         $statement = $this->pdo->prepare(
             'UPDATE users
-             SET email_verified = 1, enabled = 1, updated_at = :updated_at
+             SET email_verified = TRUE, enabled = TRUE, updated_at = :updated_at
              WHERE id = :id'
         );
         $statement->execute([
