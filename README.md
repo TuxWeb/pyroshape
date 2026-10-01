@@ -43,9 +43,11 @@ The PHP backend serves API routes and the built static SPA from `public/app`.
 
 ## Frontend
 
+The frontend uses SvelteKit 2, Svelte 5, Skeleton 5, and Tailwind CSS 4. Use Node.js 24 (or a supported version listed in `frontend/package.json`).
+
 ```bash
 cd frontend
-npm install
+npm ci
 npm run check
 npm run build
 ```

@@ -3,6 +3,6 @@
   export { className as class };
 </script>
 
-<section class={`rounded-lg border border-border bg-white shadow-soft ${className}`} {...$$restProps}>
+<section class={`card rounded-lg border border-border bg-white shadow-soft ${className}`} {...$$restProps}>
   <slot />
 </section>

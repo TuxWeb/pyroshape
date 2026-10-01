@@ -108,13 +108,14 @@ Core files/patterns from the demo:
 - `frontend/src/lib/domain/<domain>.ts`: typed API client per domain.
 - Routes should stay thin: load state, call domain client, compose UI components.
 
-## Flowbite Svelte
+## Skeleton UI
 
-Use Flowbite Svelte as the project's Svelte/Tailwind component library. The frontend follows the official quickstart setup:
+Use Skeleton 5 as the project's Svelte 5/Tailwind CSS 4 component library. The frontend follows the official SvelteKit setup:
 
-- Keep `flowbite-svelte` and `flowbite` installed as frontend dev dependencies.
-- Configure `frontend/src/app.css` with Tailwind CSS, `@plugin 'flowbite/plugin'`, and `@source "../node_modules/flowbite-svelte/dist"`.
-- Import Flowbite Svelte components directly for reusable complex UI widgets such as dropdowns, tabs, drawers, tooltips, popovers, pagination, toasts, accordions, datepickers, modals, or accessible menu behavior.
+- Keep `@skeletonlabs/skeleton` and `@skeletonlabs/skeleton-svelte` installed as frontend dev dependencies.
+- Import Tailwind CSS, both Skeleton packages, and `@skeletonlabs/skeleton/themes/mint` in `frontend/src/app.css`; set `data-theme="mint"` in `frontend/src/app.html`.
+- Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
+- Use Skeleton's `btn`, `input`, and `card` classes in local primitives. Import interactive components such as Progress, Dialog, Menu, Tabs, and Toast from `@skeletonlabs/skeleton-svelte`.
 - Keep app pages insulated through local wrappers under `frontend/src/lib/components/` when that reduces coupling or preserves Pyroshape-specific styling.
 - Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, and no frontend code in `pyroshape-core`.
 - Promote only generic reusable primitives back to `pyroshape-skeleton`; keep demo/domain pages in `pyroshape-demo`.

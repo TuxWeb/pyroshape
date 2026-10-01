@@ -1,7 +1,7 @@
 {
     "name": "dam2k/pyroshape-skeleton",
     "description": "Pyroshape skeleton application, used to startup a pyroshape-core driven backend of reusable components.",
-    "version": "0.0.2",
+    "version": "0.1.0",
     "license": "proprietary",
     "authors": [
         {

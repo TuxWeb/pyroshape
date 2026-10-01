@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeDemo\App;
+use Dam2k\PyroshapeSkeleton\App;
 use Dam2k\Pyroshape\Core\Auth\AuthService;
 use Dam2k\Pyroshape\Core\Auth\UserRepository;
 use DI\Container;

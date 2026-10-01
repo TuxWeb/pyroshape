@@ -61,8 +61,8 @@ $projectSkill = readProjectFile($root, 'SKILL.md');
 $retiredFlowbiteGuidance = 'Flowbite ' . 'M' . 'CP';
 assertNotContains($projectSkill, $retiredFlowbiteGuidance, 'project guidance does not reference retired Flowbite integration');
 assertNotContains($projectSkill, 'Ask ' . $retiredFlowbiteGuidance, 'project guidance does not instruct agents to use retired Flowbite integration');
-assertContains($projectSkill, 'Flowbite Svelte', 'project guidance documents Flowbite Svelte');
-assertContains($projectSkill, 'flowbite-svelte', 'project guidance references the Flowbite Svelte package');
+assertContains($projectSkill, 'Skeleton UI', 'project guidance documents Skeleton UI');
+assertContains($projectSkill, '@skeletonlabs/skeleton-svelte', 'project guidance references the Skeleton Svelte package');
 
 $package = json_decode(readProjectFile($root, 'frontend/package.json'), true);
 if (! is_array($package)) {
@@ -71,8 +71,8 @@ if (! is_array($package)) {
 }
 
 $devDependencies = $package['devDependencies'] ?? [];
-assertArrayHasKey($devDependencies, 'flowbite', 'frontend package includes Flowbite');
-assertArrayHasKey($devDependencies, 'flowbite-svelte', 'frontend package includes Flowbite Svelte');
+assertArrayHasKey($devDependencies, '@skeletonlabs/skeleton', 'frontend package includes Skeleton');
+assertArrayHasKey($devDependencies, '@skeletonlabs/skeleton-svelte', 'frontend package includes Skeleton Svelte');
 
 echo "frontend starter ok\n";
 
