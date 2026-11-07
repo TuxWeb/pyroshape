@@ -20,6 +20,8 @@ Implement the experience in Pyroshape patterns instead of copying the target app
 
 Reusable primitives keep new projects fast and visually consistent.
 
+The component system is shadcn-svelte with Svelte 5 and Tailwind CSS 4. Official component sources live in `frontend/src/lib/components/ui/<component>/`. `frontend/components.json` selects the Nova style and `$lib` aliases. Add new components with `npx shadcn-svelte@latest add <component>` from `frontend/`.
+
 Prefer local Svelte primitives under `frontend/src/lib/components/`:
 
 - `layout/AppShell.svelte`
@@ -31,7 +33,15 @@ Prefer local Svelte primitives under `frontend/src/lib/components/`:
 - `ui/Input.svelte`
 - `ui/LoadingState.svelte`
 
-Add new primitives only when at least two pages need the same behavior or visual structure. Good additions for business apps are `Textarea`, `Select`, `Checkbox`, `Modal`, `Dropdown`, `Tabs`, `Badge`, `Table`, and `PageHeader`.
+The uppercase wrappers use shadcn Button, Input, Card, Label, Spinner, and Alert. Button maps `primary` to `default`, `secondary` to `outline`, `ghost` to `ghost`, and `danger` to `destructive`. Use `onclick` callbacks and `bind:value` for inputs.
+
+Use shadcn components such as Dialog, Dropdown Menu, Tabs, Select, Checkbox, Badge, and Table for additional widgets. Add a Pyroshape wrapper when at least two pages need the same app-specific behavior or visual structure.
+
+## Theme
+
+Keep semantic CSS variables and Tailwind mappings in `frontend/src/app.css`. The theme preserves Pyroshape's teal primary color and supplies card, popover, secondary, muted, destructive, chart, and sidebar tokens. Light values live in `:root`; dark overrides use `.dark`.
+
+Merge component classes with `cn` from `$lib/utils`. Prefer semantic utilities such as `bg-card`, `text-muted-foreground`, and `border-border` when adding UI. Preserve the 40px controls defined by the Pyroshape wrappers. There is no UI framework theme attribute on `app.html`.
 
 ## Page Composition
 

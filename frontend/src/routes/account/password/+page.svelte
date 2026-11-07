@@ -71,11 +71,11 @@
         </FormField>
 
         <FormField label="New password">
-          <Input bind:value={newPassword} type="password" autocomplete="new-password" minlength="8" maxlength="72" required />
+          <Input bind:value={newPassword} type="password" autocomplete="new-password" minlength={8} maxlength={72} required />
         </FormField>
 
         <FormField label="Confirm new password">
-          <Input bind:value={confirmPassword} type="password" autocomplete="new-password" minlength="8" maxlength="72" required />
+          <Input bind:value={confirmPassword} type="password" autocomplete="new-password" minlength={8} maxlength={72} required />
         </FormField>
 
         <ErrorMessage message={error} />

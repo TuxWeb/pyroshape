@@ -1,15 +1,16 @@
 <script lang="ts">
-  import type { HTMLInputAttributes } from 'svelte/elements';
+  import type { HTMLInputAttributes, HTMLInputTypeAttribute } from 'svelte/elements';
+  import { Input } from './input';
+  import { cn } from '$lib/utils';
 
-  export let value: HTMLInputAttributes['value'] = '';
-  export let type: HTMLInputAttributes['type'] = 'text';
-  let className = '';
-  export { className as class };
+  let {
+    value = $bindable(''),
+    type = 'text',
+    class: className,
+    ...props
+  }: Omit<HTMLInputAttributes, 'type' | 'files'> & {
+    type?: Exclude<HTMLInputTypeAttribute, 'file'>;
+  } = $props();
 </script>
 
-<input
-  bind:value
-  {type}
-  class={`input h-10 w-full rounded-md border border-input bg-white px-3 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
-  {...$$restProps}
-/>
+<Input bind:value {type} class={cn('h-10 rounded-md bg-background px-3', className)} {...props} />

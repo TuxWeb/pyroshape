@@ -14,19 +14,19 @@ Pyroshape should be published as three separate repositories.
 2. Publish `pyroshape-skeleton`.
 3. Publish `pyroshape-demo`.
 
-The app repositories currently use a local Composer path repository for `dam2k/pyroshape-core`. Keep that during local development. After publishing core, decide whether production apps should consume core through a VCS repository, private Packagist, or a tagged release.
+This starter consumes `dam2k/pyroshape-core` through the GitHub VCS repository configured in `composer.json`. A Composer path repository is an optional local override for developing core, rather than a requirement for using the starter.
 
-## Before First Push
+## Before Push
 
 For each repo:
 
 - Make sure generated directories are ignored: `vendor/`, `frontend/node_modules/`, `frontend/.svelte-kit/`, `public/app/`, `logs/`, and `tmp/`.
 - Do not commit local DB credentials or real JWT/cookie secrets.
 - Run the repo verification commands from `README.md`.
-- Add the GitHub remote only after checking `git status --short`.
+- Inspect `git status --short` and the staged diff before committing.
+- Include `frontend/components.json`, shadcn component sources, and the npm lockfile when changing the frontend component system.
+- Keep README, delivery/style guides, `AGENTS.md`, and `SKILL.md` aligned with architectural changes.
 
-## Current Local Note
+## This Repository
 
-`pyroshape-demo` is already a valid git repository but has no remote configured.
-
-`pyroshape-core` and `pyroshape-skeleton` currently contain empty `.git/` directories that Git does not recognize as repositories. Before initializing them, remove those empty directories deliberately, then run `git init`. Do this only when ready to create the first local commit.
+`pyroshape-skeleton` is an initialized Git repository. Its configured origin is `git@github.com:dam2k/pyroshape-skeleton.git` and its main branch is `main`. Use the existing repository and remote; do not reinitialize Git. Verify sibling repository remotes independently before publishing changes there.

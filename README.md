@@ -7,9 +7,10 @@ Small Slim/PHP-DI skeleton app using the reusable `dam2k/pyroshape-core` toolkit
 - `public/index.php` - PHP entrypoint.
 - `src/App.php` - app wrapper over `Dam2k\Pyroshape\Core\App`.
 - `config/config.php` - app settings.
-- `frontend/` - SvelteKit SPA source.
+- `frontend/` - SvelteKit SPA with shadcn-svelte component source.
 - `tests/` - smoke and auth checks.
-- `/home/dino/projects/pyroshape-core` - reusable toolkit package.
+- `AGENTS.md` - project memory and working conventions for coding agents.
+- `SKILL.md` - detailed Pyroshape delivery workflow.
 
 ## Install
 
@@ -17,19 +18,7 @@ Small Slim/PHP-DI skeleton app using the reusable `dam2k/pyroshape-core` toolkit
 php /home/dino/temp/prove/php/composer.phar install
 ```
 
-The app uses a Composer path repository:
-
-```json
-{
-  "type": "path",
-  "url": "../pyroshape-core",
-  "options": {
-    "symlink": true
-  }
-}
-```
-
-Keep `pyroshape-skeleton` and `pyroshape-core` as sibling directories during local development.
+Composer installs `dam2k/pyroshape-core` through the GitHub VCS repository configured in `composer.json`. Access to that repository is required. A sibling checkout of `pyroshape-core` is optional for developing the reusable toolkit locally.
 
 ## Runtime
 
@@ -43,7 +32,7 @@ The PHP backend serves API routes and the built static SPA from `public/app`.
 
 ## Frontend
 
-The frontend uses SvelteKit 2, Svelte 5, Skeleton 5, and Tailwind CSS 4. Use Node.js 24 (or a supported version listed in `frontend/package.json`).
+The frontend uses SvelteKit 2, Svelte 5, shadcn-svelte, and Tailwind CSS 4. Use Node.js 24 (or a supported version listed in `frontend/package.json`).
 
 ```bash
 cd frontend
@@ -56,6 +45,15 @@ The build writes static files into `public/app`.
 
 `public/app` is generated output and is ignored by git.
 
+shadcn-svelte component source lives in `frontend/src/lib/components/ui/<component>/`. The uppercase Pyroshape wrappers reuse those components and preserve the starter's control sizes and variants. Configure colors in `frontend/src/app.css` and add components using the CLI configured by `frontend/components.json`:
+
+```bash
+cd frontend
+npx shadcn-svelte@latest add dialog
+```
+
+See [frontend setup](frontend/README.md), the [frontend style guide](docs/frontend-style-guide.md), and the [delivery guide](docs/ai-delivery.md).
+
 ## Verification
 
 ```bash
@@ -66,16 +64,14 @@ php tests/token_cookie.php
 php tests/spa_fallback.php
 php tests/smoke.php
 php tests/access_logger.php
+php tests/frontend_starter.php
+php tests/skeleton_identity.php
 php /home/dino/temp/prove/php/composer.phar validate
 ```
 
 ## Core Toolkit
 
-Reusable backend code lives in sibling package:
-
-```text
-/home/dino/projects/pyroshape-core
-```
+Reusable backend code lives in the separate `pyroshape-core` repository and is installed by Composer. The local reference checkout is `/home/dino/projects/pyroshape-core`.
 
 Package name:
 

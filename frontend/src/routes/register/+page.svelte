@@ -64,7 +64,7 @@
       </FormField>
 
       <FormField label="Password">
-        <Input bind:value={password} type="password" autocomplete="new-password" minlength="8" required />
+        <Input bind:value={password} type="password" autocomplete="new-password" minlength={8} required />
       </FormField>
 
       <FormField label="Display name">

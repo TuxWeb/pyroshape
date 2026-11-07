@@ -44,7 +44,7 @@
       </p>
     </div>
 
-    <Button class="w-full" variant={status === 'success' ? 'primary' : 'secondary'} type="button" on:click={() => location.assign('/login')}>
+    <Button class="w-full" variant={status === 'success' ? 'primary' : 'secondary'} type="button" onclick={() => location.assign('/login')}>
       Go to login
     </Button>
   </Card>

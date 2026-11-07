@@ -13,6 +13,14 @@ $requiredFiles = [
     'frontend/src/lib/components/ui/FormField.svelte',
     'frontend/src/lib/components/ui/Input.svelte',
     'frontend/src/lib/components/ui/LoadingState.svelte',
+    'frontend/components.json',
+    'frontend/src/lib/utils.ts',
+    'frontend/src/lib/components/ui/button/button.svelte',
+    'frontend/src/lib/components/ui/input/input.svelte',
+    'frontend/src/lib/components/ui/card/card.svelte',
+    'frontend/src/lib/components/ui/label/label.svelte',
+    'frontend/src/lib/components/ui/spinner/spinner.svelte',
+    'frontend/src/lib/components/ui/alert/alert.svelte',
     'frontend/src/lib/api.ts',
     'frontend/src/lib/session.ts',
     'frontend/src/routes/account/password/+page.svelte',
@@ -25,7 +33,7 @@ foreach ($requiredFiles as $file) {
 }
 
 $button = readProjectFile($root, 'frontend/src/lib/components/ui/Button.svelte');
-assertContains($button, 'on:click', 'Button component forwards click events');
+assertContains($button, '{...props}', 'Button component forwards native attributes and callbacks');
 
 $session = readProjectFile($root, 'frontend/src/lib/session.ts');
 assertContains($session, 'ensureSessionLoaded', 'session helper exposes ensureSessionLoaded');
@@ -61,8 +69,8 @@ $projectSkill = readProjectFile($root, 'SKILL.md');
 $retiredFlowbiteGuidance = 'Flowbite ' . 'M' . 'CP';
 assertNotContains($projectSkill, $retiredFlowbiteGuidance, 'project guidance does not reference retired Flowbite integration');
 assertNotContains($projectSkill, 'Ask ' . $retiredFlowbiteGuidance, 'project guidance does not instruct agents to use retired Flowbite integration');
-assertContains($projectSkill, 'Skeleton UI', 'project guidance documents Skeleton UI');
-assertContains($projectSkill, '@skeletonlabs/skeleton-svelte', 'project guidance references the Skeleton Svelte package');
+assertContains($projectSkill, 'shadcn-svelte', 'project guidance documents shadcn-svelte');
+assertContains($projectSkill, 'components.json', 'project guidance documents shadcn CLI configuration');
 
 $package = json_decode(readProjectFile($root, 'frontend/package.json'), true);
 if (! is_array($package)) {
@@ -71,8 +79,12 @@ if (! is_array($package)) {
 }
 
 $devDependencies = $package['devDependencies'] ?? [];
-assertArrayHasKey($devDependencies, '@skeletonlabs/skeleton', 'frontend package includes Skeleton');
-assertArrayHasKey($devDependencies, '@skeletonlabs/skeleton-svelte', 'frontend package includes Skeleton Svelte');
+assertArrayHasKey($devDependencies, 'bits-ui', 'frontend package includes Bits UI');
+assertArrayHasKey($devDependencies, 'tailwind-variants', 'frontend package includes Tailwind Variants');
+
+foreach (array_keys($devDependencies) as $dependency) {
+    assertNotContains($dependency, '@skeletonlabs/', 'frontend package excludes Skeleton UI');
+}
 
 echo "frontend starter ok\n";
 

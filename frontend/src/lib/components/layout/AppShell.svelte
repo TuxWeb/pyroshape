@@ -30,7 +30,7 @@
         {#if $session.authenticated}
           <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/dashboard">Dashboard</a>
           <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/account/password">Password</a>
-          <Button variant="ghost" type="button" class="ml-0 min-w-20 sm:ml-2" disabled={loggingOut} on:click={signOut}>
+          <Button variant="ghost" type="button" class="ml-0 min-w-20 sm:ml-2" disabled={loggingOut} onclick={signOut}>
             {loggingOut ? 'Logging out...' : 'Logout'}
           </Button>
         {:else}

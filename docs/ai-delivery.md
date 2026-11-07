@@ -38,6 +38,10 @@ This vertical slice is the preferred Codex task size. Avoid large rewrites and a
 - Use `frontend/src/lib/api.ts` for JSON requests.
 - Put typed domain API functions in `frontend/src/lib/domain/`.
 - Reuse local Svelte primitives before adding new components.
+- Use the checked-in shadcn-svelte components in `frontend/src/lib/components/ui/<component>/` and the uppercase Pyroshape wrappers for app-specific controls.
+- Add components from `frontend/` using `npx shadcn-svelte@latest add <component>`. Keep `components.json`, component sources, dependencies, and `package-lock.json` in sync.
+- Configure semantic theme variables in `frontend/src/app.css`; use `cn` from `$lib/utils` to merge classes.
+- Use Svelte 5 `onclick` callbacks for Button wrappers and preserve `$bindable` for Input values. Pass numeric input constraints as numbers, for example `minlength={8}`.
 - Keep operational screens dense, scannable, and responsive.
 - Always include loading, empty, error, and disabled/submitting states for data screens.
 - Use the session store helpers for auth checks and logout.
@@ -45,6 +49,10 @@ This vertical slice is the preferred Codex task size. Avoid large rewrites and a
 ## Common Failure Checks
 
 - Login HTTP 500: check database credentials, migrations, and JWT/cookie key length.
-- Browser logout not firing: check Svelte button event forwarding.
+- Browser logout not firing: check that `onclick` is forwarded through the Pyroshape Button wrapper to the shadcn Button.
 - SPA route returns 404: rebuild frontend and check `settings.frontend.appPath`.
 - API route captured by SPA fallback: register app routes in `setupAppRoutes()` before fallback.
+
+## Project Memory
+
+Keep `AGENTS.md` aligned with the current architecture and working conventions. Keep the detailed workflow in `SKILL.md` and the UI setup in `frontend/README.md`. When changing the component system, update all of these together with the starter checks in `tests/frontend_starter.php`.

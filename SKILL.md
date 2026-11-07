@@ -27,11 +27,9 @@ Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `dam2k/pyroshape-cor
 
 1. Copy `pyroshape-skeleton` to the new project directory.
 2. Rename Composer package, PHP namespace, app wrapper, README, and tests from skeleton names to the new app name.
-3. Keep `dam2k/pyroshape-core` as a Composer path repository while developing locally.
-   - For sibling layout: `../pyroshape-core`.
-   - If working inside a nested git worktree, adjust the relative path accordingly and fix it before merging back.
+3. Keep the GitHub VCS repository for `dam2k/pyroshape-core` configured in `composer.json`. If explicitly developing core locally, a Composer path repository can point to `../pyroshape-core`; do not make a sibling checkout a runtime or test requirement.
 4. Run Composer through `/home/dino/temp/prove/php/composer.phar install`.
-5. Build frontend from `frontend/` with `npm install`, `npm run check`, `npm run build`.
+5. Build frontend from `frontend/` with `npm ci`, `npm run check`, `npm run build`. Use `npm install` when intentionally changing dependencies and commit the updated lockfile.
 6. Serve with `php -S 127.0.0.1:8080 -t public`.
 
 After creating the app, immediately verify the empty starter before adding domain code. This separates scaffold problems from feature problems.
@@ -108,15 +106,15 @@ Core files/patterns from the demo:
 - `frontend/src/lib/domain/<domain>.ts`: typed API client per domain.
 - Routes should stay thin: load state, call domain client, compose UI components.
 
-## Skeleton UI
+## shadcn-svelte
 
-Use Skeleton 5 as the project's Svelte 5/Tailwind CSS 4 component library. The frontend follows the official SvelteKit setup:
+Use shadcn-svelte as the project's Svelte 5/Tailwind CSS 4 component system:
 
-- Keep `@skeletonlabs/skeleton` and `@skeletonlabs/skeleton-svelte` installed as frontend dev dependencies.
-- Import Tailwind CSS, both Skeleton packages, and `@skeletonlabs/skeleton/themes/mint` in `frontend/src/app.css`; set `data-theme="mint"` in `frontend/src/app.html`.
-- Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
-- Use Skeleton's `btn`, `input`, and `card` classes in local primitives. Import interactive components such as Progress, Dialog, Menu, Tabs, and Toast from `@skeletonlabs/skeleton-svelte`.
-- Keep app pages insulated through local wrappers under `frontend/src/lib/components/` when that reduces coupling or preserves Pyroshape-specific styling.
+- Component source is checked in under `frontend/src/lib/components/ui/<component>/`; shadcn-svelte is a CLI, not a runtime package dependency.
+- Keep `frontend/components.json` configured with the Nova style, official registry, CSS path, and `$lib` aliases. Run `npx shadcn-svelte@latest add <component>` from `frontend/` to add components.
+- Keep Bits UI, Tailwind Variants, `cn`, Lucide, and `tw-animate-css` installed as required by the checked-in components.
+- Configure semantic CSS variables and Tailwind mappings in `frontend/src/app.css`. Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
+- Reuse the uppercase Pyroshape wrappers for app-specific Button variants, Input bindings, Card spacing, FormField labels, LoadingState, and ErrorMessage.
 - Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, and no frontend code in `pyroshape-core`.
 - Promote only generic reusable primitives back to `pyroshape-skeleton`; keep demo/domain pages in `pyroshape-demo`.
 
@@ -130,15 +128,7 @@ Frontend quality rules:
 - Guard route detail pages against stale async responses when ids change.
 - Use `ApiError.message` for backend validation messages.
 
-Important Svelte detail: if wrapping a native button in a component, forward click events explicitly:
-
-```svelte
-<button on:click {...$$restProps}>
-  <slot />
-</button>
-```
-
-Without this, parent `<Button on:click={...}>` handlers can fail.
+Svelte 5 event handling: use callback props such as `<Button onclick={signOut}>`. Local wrappers must forward native attributes and callbacks to the shadcn component; do not use legacy `on:click` on the Button wrapper. Preserve `$bindable` for wrapped inputs.
 
 ## Resource Slice Pattern
 
