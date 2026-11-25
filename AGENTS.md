@@ -49,6 +49,7 @@ Pyroshape is TuxWeb's open-source PHP framework. The repository root is the `tux
 ## Milestones, Git, and deployment
 
 - At each implementation milestone, verify the result, commit only the relevant changes with a descriptive message, and push to the working branch unless the user directs otherwise. Report any blocked step and its actual status.
+- The package maintainer decides when to release and which version to publish. Create release tags and publish releases only with the maintainer’s explicit authorization. Routine pushes do not trigger a release.
 - Deploy at the end of the goal or when a milestone explicitly warrants it, unless directed otherwise. Verify the target, essential dependencies, and potential effects on data before deploying.
 - For goals with multiple milestones, give brief periodic updates with estimated progress percentages for the current milestone and the overall goal, along with the work that remains.
 - In the final report, summarize the changes, verification results, commit and push status, deployment status, and relevant limitations.

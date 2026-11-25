@@ -48,7 +48,7 @@ The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSH
 
 ## Releases
 
-Push development and documentation changes to `main` as usual. Create a version tag and a GitHub release when a set of changes is ready for a stable release on Packagist.
+Push development and documentation changes to `main` as usual. The package maintainer decides when to publish a stable release on Packagist and sets its version. Create the version tag and GitHub release only with the maintainer's explicit authorization.
 
 ## License
 
