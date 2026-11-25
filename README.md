@@ -2,12 +2,41 @@
 
 Pyroshape is TuxWeb's PHP framework for building web apps with Slim and PHP-DI. The core library handles authentication and sessions, JSON errors, logging, and database access through PDO.
 
-- [Starter](apps/skeleton/README.md) gives you a SvelteKit app to build on.
-- [Demo](apps/demo/README.md) shows how to build an authenticated Projects and Tasks app.
+## Start a new app
 
-## Run the starter
+Use PHP 8.5+, Composer, and Node.js 24. The starter includes a Svelte 5, SvelteKit 2, and TypeScript frontend with shadcn-svelte components. PostgreSQL is recommended for new apps, and MariaDB is also supported.
 
-From the repository root, use PHP 8.5+, Composer, and Node.js 24.
+Clone the repository with `git clone https://github.com/TuxWeb/pyroshape.git` if needed. From the repository root, copy the tracked starter files and MIT license to a new sibling directory.
+
+~~~sh
+mkdir ../my-app &&
+git archive HEAD:apps/skeleton | tar -xf - -C ../my-app &&
+git show HEAD:LICENSE > ../my-app/LICENSE &&
+cd ../my-app
+~~~
+
+Remove the local `path` repository entry from `composer.json` so Composer can resolve Core from Packagist. Rename the Composer package, application PHP namespace, and npm package for your project. The [standalone setup guide](apps/skeleton/README.md#using-the-starter-for-a-separate-app) lists the files to update.
+
+~~~sh
+composer update tuxweb-it/pyroshape
+npm --prefix frontend ci
+npm --prefix frontend run check
+npm --prefix frontend run build
+~~~
+
+To register and sign in on first launch, apply the database migration and export the connection settings and development auth keys in the same shell. Follow the [local authentication guide](apps/skeleton/README.md#local-authentication).
+
+~~~sh
+php -S 127.0.0.1:8080 -t public public/index.php
+~~~
+
+Open [the local app](http://127.0.0.1:8080). For a quick smoke check, the app's [`/health`](http://127.0.0.1:8080/health) endpoint also works before database setup.
+
+You can use another frontend with the same `/api` endpoints. For a same-origin static SPA, build an `index.html` and assets that Core can serve from `public/app`. See [using another frontend](apps/skeleton/README.md#using-another-frontend).
+
+### Try the starter in this repository
+
+The bundled starter uses the Core checkout through a Composer `path` repository. From the repository root, run the following commands.
 
 ~~~sh
 cd apps/skeleton
@@ -16,8 +45,6 @@ npm --prefix frontend ci
 npm --prefix frontend run build
 php -S 127.0.0.1:8080 -t public public/index.php
 ~~~
-
-Open [localhost:8080](http://127.0.0.1:8080). The [starter guide](apps/skeleton/README.md#local-authentication) covers database setup and sign-in.
 
 ## Add Pyroshape to an app
 
@@ -32,6 +59,14 @@ Commit your app's Composer lockfile to pin the framework revision. The [starter'
 If your app already requires `tuxweb/pyroshape` from the 0.9.0 release, remove that requirement with `composer remove tuxweb/pyroshape --no-update` before running `composer require` above. The PHP namespace remains `TuxWeb\Pyroshape\Core`.
 
 If you previously added the `repositories.pyroshape` GitHub entry, run `composer config --unset repositories.pyroshape` to let Composer resolve the package through Packagist.
+
+## Work with Codex or Claude Code
+
+Open the project directory in your coding agent and start with its `AGENTS.md`. A standalone app includes the [starter instructions](apps/skeleton/AGENTS.md) and [delivery workflow](apps/skeleton/SKILL.md). When working in this repository, use the [repository instructions](AGENTS.md) and [Pyroshape app skill](skills/pyroshape-app/SKILL.md). The [demo](apps/demo/README.md) shows authenticated CRUD for projects and tasks.
+
+For a new app, ask the agent to run the starter's [verification checks](apps/skeleton/README.md#verification) before adding domain routes, migrations, or UI.
+
+Both the [framework checkout](CLAUDE.md) and the [starter](apps/skeleton/CLAUDE.md) provide a `CLAUDE.md` that imports the corresponding `AGENTS.md` for Claude Code. See [Claude Code's instructions for importing files](https://code.claude.com/docs/en/memory#import-additional-files).
 
 ## Test the core library
 

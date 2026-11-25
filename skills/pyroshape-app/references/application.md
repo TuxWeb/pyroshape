@@ -4,7 +4,7 @@
 
 Use `apps/skeleton/` for a new app. Rename the Composer and frontend package identities, PHP namespaces, and starter identity assertions. The in-repository starter uses a Composer `path` repository pointing to the root via `../..`. For an independent copy, remove the Core path entry and run `composer update tuxweb-it/pyroshape` to resolve Core from Packagist and update the lockfile. Keep the configured dependency source when working on an existing app. Install dependencies with `composer install`.
 
-Follow the app README for runtime settings used by `config/config.php` and apply the app's auth schema and migrations to a test database. Install and build the frontend using the starter's lockfile and supported Node version. Run its smoke and auth checks before introducing domain code. In the current starter, `npm --prefix frontend ci`, `npm --prefix frontend run check`, and `npm --prefix frontend run build` produce the static SPA at `public/app`. The `spa_fallback.php` test needs that build. For local smoke tests, follow the app's server setup, such as `php -S 127.0.0.1:8080 -t public` in the starter.
+Follow the app README for runtime settings and the auth migration for the chosen PDO driver. The starter documents PostgreSQL as the default and MariaDB/MySQL as alternatives. Run its smoke and auth checks before introducing domain code. In the starter, `npm --prefix frontend ci`, `npm --prefix frontend run check`, and `npm --prefix frontend run build` produce the static SPA at `public/app`. The `spa_fallback.php` test needs that build. For local smoke tests, follow the app's server setup in its README.
 
 ## Extend the application
 
@@ -14,6 +14,7 @@ Follow the app README for runtime settings used by `config/config.php` and apply
 
 ## Work with the app's frontend
 
-- Inspect the app's `package.json`, Svelte configuration, and existing design system. Legacy apps may use different versions or components. The current starter uses Svelte 5, Tailwind CSS 4, and shadcn-svelte. Its local wrappers forward `onclick` and other native props and preserve `bind:value` on inputs. Keep its token mappings in `frontend/src/app.css` and follow `frontend/components.json` for component generation.
+- Inspect the app's `package.json`, frontend configuration, and existing design system. The current starter uses SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. Its local wrappers forward `onclick` and other native props and preserve `bind:value` on inputs. Keep its token mappings in `frontend/src/app.css` and follow `frontend/components.json` for component generation.
 - Reuse the app's typed API client and session store. In the starter, `frontend/src/lib/api.ts` sends same-origin credentials and exposes backend errors via `ApiError`. Use `ensureSessionLoaded()` for protected pages and refresh or clear the store after login or logout. Preserve the app's base-path conventions if it is served under a URL prefix.
 - Edit frontend source and regenerate the build. The starter serves it from `public/app` through PHP. When a route, callback, or session flow changes, check it in a browser as well as running the project's relevant checks and build.
+- For a replacement SPA, supply `index.html` under `settings.frontend.appPath` and use `/app/` for assets served by PHP. A separately served frontend can proxy the same `/api/*` and `/health` routes under its origin.

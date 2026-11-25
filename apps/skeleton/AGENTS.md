@@ -4,8 +4,9 @@
 
 - `apps/skeleton/` is the starter in the Pyroshape monorepo. Core lives at the repository root and `apps/demo/` is the reference app.
 - Backend: PHP/Slim/PHP-DI, Composer dependency `tuxweb-it/pyroshape`, app namespace `TuxWeb\PyroshapeSkeleton`.
-- Composer installs Core through the path repository at `../..`. Resolve the package through the app’s `vendor/autoload.php`.
-- Frontend: SvelteKit 2, Svelte 5, Tailwind CSS 4, shadcn-svelte. Static SPA output goes to `public/app`, served by PHP/Slim.
+- Composer installs Core through the path repository at `../..` in the monorepo and through Packagist in standalone copies. Load dependencies through the app’s `vendor/autoload.php`.
+- Frontend defaults to SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. Static SPA output goes to `public/app`, served by PHP/Slim.
+- PostgreSQL is the default development database. MariaDB and MySQL use the existing `pdo_mysql` migration. Follow the [README](README.md#local-authentication) for DSNs and schema commands.
 
 ## UI Conventions
 

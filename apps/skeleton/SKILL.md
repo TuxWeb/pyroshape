@@ -5,7 +5,7 @@ description: Use when creating, extending, reviewing, or troubleshooting Pyrosha
 
 # Pyroshape App Skill
 
-Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `tuxweb-it/pyroshape`, and a SvelteKit static SPA served by PHP from `public/app`.
+Use this for Pyroshape apps with a PHP 8.5+ Slim/PHP-DI backend. The starter uses PostgreSQL and a SvelteKit static SPA served by PHP from `public/app`. Check the app's stack before assuming it uses those defaults.
 
 ## Repository Roles
 
@@ -23,13 +23,7 @@ Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `tuxweb-it/pyroshape
 
 ## Starting a New App
 
-1. Copy `apps/skeleton/` into the new project directory. Rename its Composer package, PHP namespace, frontend package, and identity assertions in the tests.
-2. Keep the Composer path repository pointed at the monorepo root for apps inside the monorepo. For a standalone app, configure the GitHub VCS repository and update the lockfile as described in the starter README.
-3. Run `composer install` from the app directory.
-4. Build the frontend with `npm --prefix frontend ci`, `npm --prefix frontend run check`, and `npm --prefix frontend run build`.
-5. Serve with `php -S 127.0.0.1:8080 -t public`. See the starter README for local auth settings and the database schema.
-
-Verify the starter before adding domain code.
+Follow the starter README to make a standalone copy, resolve Core from Packagist, and rename the app. Then run its quick start and verification steps before adding domain code. Use the app's selected database schema and PDO driver. Keep the monorepo's Composer path repository when working inside `apps/skeleton/`.
 
 ## Backend Pattern
 
@@ -152,7 +146,7 @@ Auth endpoints provided by core:
 - `POST /api/auth/logout`
 - `GET /api/session`
 
-See the starter README for the `PYROSHAPE_*` environment variables, MySQL schema, and auth setup. During local auth testing, use separate development keys and explicitly enable development mode for the verification token. If login returns HTTP 500, check the connection settings, migrations, and key lengths. If logout works via HTTP but fails in the browser, inspect the Svelte button event forwarding.
+See the starter README for the `PYROSHAPE_*` environment variables and the PostgreSQL and MariaDB/MySQL schemas. During local auth testing, use separate development keys and explicitly enable development mode for the verification token. If login returns HTTP 500, check the connection settings, migrations, and key lengths. If logout works via HTTP but fails in the browser, inspect the Svelte button event forwarding.
 
 ## When to Change Core
 
@@ -160,7 +154,7 @@ Keep reusable JSON helpers, generic validation, auth and session middleware, log
 
 ## Verification Checklist
 
-Core route hook, from `apps/skeleton/`:
+Core route hook, when working in the monorepo from `apps/skeleton/`:
 
 ```bash
 php ../../tests/app_routes_before_spa_fallback.php

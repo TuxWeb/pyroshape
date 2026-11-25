@@ -1,6 +1,6 @@
 # Pyroshape AI Delivery Guide
 
-Use this guide when Codex builds a new Pyroshape app or extends an existing one.
+Use this guide when a developer or coding agent builds a new Pyroshape app or extends an existing one. Start with the [README quick start](../README.md#quick-start), then keep the app's chosen database and frontend stack in [AGENTS.md](../AGENTS.md).
 
 ## Repository Boundaries
 
@@ -22,7 +22,7 @@ Build features as a vertical slice:
 7. Svelte route pages with loading, empty, error, and success states.
 8. Verification with PHP tests, `npm --prefix frontend run check`, and `npm --prefix frontend run build`.
 
-This vertical slice is the preferred Codex task size. Avoid large rewrites and avoid backend-only or frontend-only work unless the user explicitly asks for that.
+Use a slice of this size for features that need both layers. Keep backend-only and frontend-only requests within their requested scope.
 
 ## Backend Expectations
 

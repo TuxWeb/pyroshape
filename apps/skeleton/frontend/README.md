@@ -2,7 +2,7 @@
 
 SvelteKit is configured as a static SPA. `npm run build` writes the compiled app to `../public/app`, where PHP/Slim serves it.
 
-This scaffold uses SvelteKit 2, Svelte 5, shadcn-svelte, and Tailwind CSS 4. Use Node.js 20.19+, 22.12+, or 24+ (Node.js 24 is recommended).
+This scaffold uses SvelteKit 2, Svelte 5, TypeScript, shadcn-svelte, and Tailwind CSS 4. Use Node.js 20.19+, 22.12+, or 24+ (Node.js 24 is recommended).
 
 Install the locked dependencies with `npm ci`, then run `npm run check` and `npm run build`.
 
