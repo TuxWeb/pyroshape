@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dab22cbf326cda3958f8d1505ccca767",
+    "content-hash": "78dc7eae4d765e73e1526bef674fa362",
     "packages": [
         {
             "name": "fig/http-message-util",
@@ -1086,12 +1086,12 @@
             "time": "2026-09-01T17:11:05+00:00"
         },
         {
-            "name": "tuxweb/pyroshape",
-            "version": "0.9.0",
+            "name": "tuxweb-it/pyroshape",
+            "version": "0.9.1",
             "dist": {
                 "type": "path",
                 "url": "../..",
-                "reference": "d79de623469baade6ee8f99eb761896e57debe5c"
+                "reference": "9f5149974e285719afc7fc9094f4bb22c1c577ef"
             },
             "require": {
                 "firebase/php-jwt": "^7.0",

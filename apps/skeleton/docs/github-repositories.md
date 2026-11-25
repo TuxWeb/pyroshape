@@ -2,7 +2,7 @@
 
 The [TuxWeb/pyroshape repository](https://github.com/TuxWeb/pyroshape) contains the reusable Composer package at the root, the starter in `apps/skeleton/`, and the reference app in `apps/demo/`.
 
-The starter installs `tuxweb/pyroshape` from the repository root through its Composer path repository. For a starter copied into its own repository, configure Composer with the [GitHub VCS installation instructions](../../../README.md).
+The starter installs `tuxweb-it/pyroshape` from the repository root through its Composer path repository. For a starter copied into its own repository, configure Composer with the [GitHub VCS installation instructions](../../../README.md).
 
 ## Before publishing
 

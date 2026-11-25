@@ -1,6 +1,6 @@
 # Pyroshape Core
 
-Pyroshape is TuxWeb's PHP framework, planned for release as open source. The repository root is the `tuxweb/pyroshape` Composer package for PHP 8.5 or later. Core provides Slim/PHP-DI bootstrapping, middleware, authentication, logging, JSON error handling, and PDO access. `apps/skeleton/` is the starter for new apps and `apps/demo/` shows how to integrate Core. Keep application routes, domain logic, frontends, and app-specific migrations in the apps. Both bundled apps resolve Core from the root of this repository.
+Pyroshape is TuxWeb's open-source PHP framework. The repository root is the `tuxweb-it/pyroshape` Composer package for PHP 8.5 or later. Core provides Slim/PHP-DI bootstrapping, middleware, authentication, logging, JSON error handling, and PDO access. `apps/skeleton/` is the starter for new apps and `apps/demo/` shows how to integrate Core. Keep application routes, domain logic, frontends, and app-specific migrations in the apps. Both bundled apps resolve Core from the root of this repository.
 
 ## Working approach
 

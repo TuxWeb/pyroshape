@@ -5,7 +5,7 @@ description: Use when creating, extending, reviewing, or troubleshooting Pyrosha
 
 # Pyroshape App Skill
 
-Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `tuxweb/pyroshape`, and a SvelteKit static SPA served by PHP from `public/app`.
+Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `tuxweb-it/pyroshape`, and a SvelteKit static SPA served by PHP from `public/app`.
 
 ## Repository Roles
 

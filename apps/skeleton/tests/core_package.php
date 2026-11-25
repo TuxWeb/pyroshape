@@ -9,7 +9,7 @@ if (!class_exists(\TuxWeb\Pyroshape\Core\App::class)) {
     exit(1);
 }
 
-$packageName = 'tuxweb/pyroshape';
+$packageName = 'tuxweb-it/pyroshape';
 if (!\Composer\InstalledVersions::isInstalled($packageName)) {
     fwrite(STDERR, "Core package is not installed by Composer\n");
     exit(1);

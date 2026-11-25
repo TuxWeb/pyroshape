@@ -1,6 +1,6 @@
 # Pyroshape Demo
 
-The demo uses the monorepo's `tuxweb/pyroshape` package to show authenticated Projects and Tasks CRUD. The Slim/PHP-DI backend handles auth, API routes, persistence, logging, and SPA fallback. The SvelteKit frontend builds to `public/app`.
+The demo uses the monorepo's `tuxweb-it/pyroshape` package to show authenticated Projects and Tasks CRUD. The Slim/PHP-DI backend handles auth, API routes, persistence, logging, and SPA fallback. The SvelteKit frontend builds to `public/app`.
 
 ## Install
 

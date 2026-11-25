@@ -1,5 +1,5 @@
 {
-    "name": "tuxweb/pyroshape",
+    "name": "tuxweb-it/pyroshape",
     "description": "Reusable backend toolkit for Pyroshape applications",
     "type": "library",
     "license": "MIT",

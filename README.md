@@ -25,10 +25,12 @@ Run these commands from your app directory.
 
 ~~~sh
 composer config repositories.pyroshape vcs https://github.com/TuxWeb/pyroshape.git
-composer require 'tuxweb/pyroshape:^0.9'
+composer require 'tuxweb-it/pyroshape:^0.9.1'
 ~~~
 
 Commit your app's Composer lockfile to pin the framework revision. The [starter's app class](apps/skeleton/src/App.php) shows how an app extends the framework.
+
+If your app already requires `tuxweb/pyroshape` from the 0.9.0 release, remove that requirement with `composer remove tuxweb/pyroshape --no-update` before running `composer require` above. The PHP namespace remains `TuxWeb\Pyroshape\Core`.
 
 ## Test the core library
 
