@@ -53,7 +53,7 @@ php -S 127.0.0.1:8080 -t public public/index.php
 Install [`tuxweb-it/pyroshape` from Packagist](https://packagist.org/packages/tuxweb-it/pyroshape) by running this command from your app directory.
 
 ~~~sh
-composer require 'tuxweb-it/pyroshape:^0.9.1'
+composer require 'tuxweb-it/pyroshape:^0.9.2'
 ~~~
 
 Commit your app's Composer lockfile to pin the framework revision. The [starter's app class](apps/skeleton/src/App.php) shows how an app extends the framework.
