@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Spinner from '$lib/components/ui/Spinner.svelte';
+  import Spinner from '#lib/components/ui/Spinner.svelte';
 
   export let label = 'Loading...';
 </script>

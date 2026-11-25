@@ -1,25 +1,25 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ApiError } from '$lib/api';
+  import { ApiError } from '#lib/api.ts';
   import {
     createProject,
     deleteProject,
     listProjects,
     type Project
-  } from '$lib/domain/projects';
-  import { ensureSessionLoaded, session, sessionLoading } from '$lib/session';
-  import Alert from '$lib/components/ui/Alert.svelte';
-  import Badge from '$lib/components/ui/Badge.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
-  import EmptyState from '$lib/components/ui/EmptyState.svelte';
-  import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
-  import FormField from '$lib/components/ui/FormField.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
-  import LoadingState from '$lib/components/ui/LoadingState.svelte';
-  import Modal from '$lib/components/ui/Modal.svelte';
-  import Table from '$lib/components/ui/Table.svelte';
-  import Textarea from '$lib/components/ui/Textarea.svelte';
+  } from '#lib/domain/projects.ts';
+  import { ensureSessionLoaded, session, sessionLoading } from '#lib/session.ts';
+  import Alert from '#lib/components/ui/Alert.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import EmptyState from '#lib/components/ui/EmptyState.svelte';
+  import ErrorMessage from '#lib/components/ui/ErrorMessage.svelte';
+  import FormField from '#lib/components/ui/FormField.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import LoadingState from '#lib/components/ui/LoadingState.svelte';
+  import Modal from '#lib/components/ui/Modal.svelte';
+  import Table from '#lib/components/ui/Table.svelte';
+  import Textarea from '#lib/components/ui/Textarea.svelte';
 
   let sessionChecked = false;
   let projects: Project[] = [];

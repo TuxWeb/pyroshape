@@ -1,5 +1,5 @@
 import { get, writable } from 'svelte/store';
-import { apiJson } from '$lib/api';
+import { apiJson } from '#lib/api.ts';
 
 export type Session = {
   authenticated: boolean;

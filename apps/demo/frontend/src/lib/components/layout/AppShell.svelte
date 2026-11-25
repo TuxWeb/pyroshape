@@ -1,8 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import { session, logout } from '$lib/session';
-  import Alert from '$lib/components/ui/Alert.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
+  import { session, logout } from '#lib/session.ts';
+  import Alert from '#lib/components/ui/Alert.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
 
   let logoutError = '';
   let loggingOut = false;

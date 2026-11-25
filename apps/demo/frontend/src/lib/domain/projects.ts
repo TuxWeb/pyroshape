@@ -1,4 +1,4 @@
-import { apiJson } from '$lib/api';
+import { apiJson } from '#lib/api.ts';
 
 export type Task = {
   id: number;

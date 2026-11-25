@@ -1,8 +1,8 @@
 <script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
-  import { ensureSessionLoaded } from '$lib/session';
-  import AppShell from '$lib/components/layout/AppShell.svelte';
+  import { ensureSessionLoaded } from '#lib/session.js';
+  import AppShell from '#lib/components/layout/AppShell.svelte';
 
   onMount(() => {
     ensureSessionLoaded();

@@ -40,7 +40,7 @@ Use a slice of this size for features that need both layers. Keep backend-only a
 - Reuse local Svelte primitives before adding new components.
 - Use the checked-in shadcn-svelte components in `frontend/src/lib/components/ui/<component>/` and the uppercase Pyroshape wrappers for app-specific controls.
 - Add components from `frontend/` using `npx shadcn-svelte@latest add <component>`. Keep `components.json`, component sources, dependencies, and `package-lock.json` in sync.
-- Configure semantic theme variables in `frontend/src/app.css`; use `cn` from `$lib/utils` to merge classes.
+- Configure semantic theme variables in `frontend/src/app.css`; use `cn` from `#lib/utils.js` to merge classes.
 - Use Svelte 5 `onclick` callbacks for Button wrappers and preserve `$bindable` for Input values. Pass numeric input constraints as numbers, for example `minlength={8}`.
 - Keep operational screens dense, scannable, and responsive.
 - Always include loading, empty, error, and disabled/submitting states for data screens.

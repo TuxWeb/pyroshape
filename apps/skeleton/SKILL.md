@@ -102,7 +102,7 @@ Core files/patterns from the demo:
 Use shadcn-svelte as the project's Svelte 5/Tailwind CSS 4 component system:
 
 - Component source is checked in under `frontend/src/lib/components/ui/<component>/`; shadcn-svelte is a CLI, not a runtime package dependency.
-- Keep `frontend/components.json` configured with the Nova style, official registry, CSS path, and `$lib` aliases. Run `npx shadcn-svelte@latest add <component>` from `frontend/` to add components.
+- Keep `frontend/components.json` configured with the Nova style, official registry, CSS path, and `#lib` aliases. Run `npx shadcn-svelte@latest add <component>` from `frontend/` to add components.
 - Keep Bits UI, Tailwind Variants, `cn`, Lucide, and `tw-animate-css` installed as required by the checked-in components.
 - Configure semantic CSS variables and Tailwind mappings in `frontend/src/app.css`. Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
 - Reuse the uppercase Pyroshape wrappers for app-specific Button variants, Input bindings, Card spacing, FormField labels, LoadingState, and ErrorMessage.

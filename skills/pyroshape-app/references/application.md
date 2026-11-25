@@ -14,7 +14,7 @@ Follow the app README for runtime settings and the auth migration for the chosen
 
 ## Work with the app's frontend
 
-- Inspect the app's `package.json`, frontend configuration, and existing design system. The current starter uses SvelteKit 2, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. Its local wrappers forward `onclick` and other native props and preserve `bind:value` on inputs. Keep its token mappings in `frontend/src/app.css` and follow `frontend/components.json` for component generation.
+- Inspect the app's `package.json`, frontend configuration, and existing design system. The current starter uses SvelteKit 3, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. Its local wrappers forward `onclick` and other native props and preserve `bind:value` on inputs. Keep its token mappings in `frontend/src/app.css` and follow `frontend/components.json` for component generation.
 - Reuse the app's typed API client and session store. In the starter, `frontend/src/lib/api.ts` sends same-origin credentials and exposes backend errors via `ApiError`. Use `ensureSessionLoaded()` for protected pages and refresh or clear the store after login or logout. Preserve the app's base-path conventions if it is served under a URL prefix.
 - Edit frontend source and regenerate the build. The starter serves it from `public/app` through PHP. When a route, callback, or session flow changes, check it in a browser as well as running the project's relevant checks and build.
 - For a replacement SPA, supply `index.html` under `settings.frontend.appPath` and use `/app/` for assets served by PHP. A separately served frontend can proxy the same `/api/*` and `/health` routes under its origin.

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Button, type ButtonProps, type ButtonVariant } from './button';
-  import { cn } from '$lib/utils';
+  import { cn } from '#lib/utils.js';
 
   type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
   let { variant = 'primary', class: className, ...props }: Omit<ButtonProps, 'variant'> & {

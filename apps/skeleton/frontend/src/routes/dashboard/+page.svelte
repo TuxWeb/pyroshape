@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ensureSessionLoaded, session, sessionLoading } from '$lib/session';
-  import Card from '$lib/components/ui/Card.svelte';
-  import EmptyState from '$lib/components/ui/EmptyState.svelte';
-  import LoadingState from '$lib/components/ui/LoadingState.svelte';
+  import { ensureSessionLoaded, session, sessionLoading } from '#lib/session.js';
+  import Card from '#lib/components/ui/Card.svelte';
+  import EmptyState from '#lib/components/ui/EmptyState.svelte';
+  import LoadingState from '#lib/components/ui/LoadingState.svelte';
 
   onMount(() => {
     ensureSessionLoaded();

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { ApiError, apiJson } from '$lib/api';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
+  import { ApiError, apiJson } from '#lib/api.ts';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
 
   let status: 'loading' | 'success' | 'error' = 'loading';
   let message = 'Checking verification link...';

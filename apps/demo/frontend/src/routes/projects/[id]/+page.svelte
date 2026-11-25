@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { page } from '$app/stores';
-  import { ApiError } from '$lib/api';
+  import type { PageProps } from './$types';
+  import { ApiError } from '#lib/api.ts';
   import {
     createTask,
     deleteTask,
@@ -10,19 +10,21 @@
     updateTask,
     type ProjectDetail,
     type Task
-  } from '$lib/domain/projects';
-  import { ensureSessionLoaded, session, sessionLoading } from '$lib/session';
-  import Alert from '$lib/components/ui/Alert.svelte';
-  import Badge from '$lib/components/ui/Badge.svelte';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
-  import EmptyState from '$lib/components/ui/EmptyState.svelte';
-  import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
-  import FormField from '$lib/components/ui/FormField.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
-  import LoadingState from '$lib/components/ui/LoadingState.svelte';
-  import Modal from '$lib/components/ui/Modal.svelte';
-  import Textarea from '$lib/components/ui/Textarea.svelte';
+  } from '#lib/domain/projects.ts';
+  import { ensureSessionLoaded, session, sessionLoading } from '#lib/session.ts';
+  import Alert from '#lib/components/ui/Alert.svelte';
+  import Badge from '#lib/components/ui/Badge.svelte';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import EmptyState from '#lib/components/ui/EmptyState.svelte';
+  import ErrorMessage from '#lib/components/ui/ErrorMessage.svelte';
+  import FormField from '#lib/components/ui/FormField.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
+  import LoadingState from '#lib/components/ui/LoadingState.svelte';
+  import Modal from '#lib/components/ui/Modal.svelte';
+  import Textarea from '#lib/components/ui/Textarea.svelte';
+
+  export let params: PageProps['params'];
 
   let sessionChecked = false;
   let project: ProjectDetail | null = null;
@@ -45,7 +47,7 @@
   let deletingTaskId: number | null = null;
   let taskToDelete: Task | null = null;
 
-  $: projectId = Number($page.params.id);
+  $: projectId = Number(params.id);
   $: invalidProjectId = !Number.isInteger(projectId) || projectId <= 0;
   $: openTaskCount = project?.tasks.filter((task) => !task.completed).length ?? 0;
   $: completedTaskCount = project?.tasks.filter((task) => task.completed).length ?? 0;

@@ -1,12 +1,12 @@
 <script lang="ts">
-  import { browser } from '$app/environment';
-  import { ApiError, apiJson } from '$lib/api';
-  import type { Session } from '$lib/session';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
-  import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
-  import FormField from '$lib/components/ui/FormField.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
+  import { browser } from '$app/env';
+  import { ApiError, apiJson } from '#lib/api.ts';
+  import type { Session } from '#lib/session.ts';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import ErrorMessage from '#lib/components/ui/ErrorMessage.svelte';
+  import FormField from '#lib/components/ui/FormField.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
 
   type RegisterResponse = Partial<Session> & {
     verificationToken?: string;

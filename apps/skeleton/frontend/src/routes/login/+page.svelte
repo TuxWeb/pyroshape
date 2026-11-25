@@ -1,13 +1,13 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { onMount } from 'svelte';
-  import { ApiError, apiJson } from '$lib/api';
-  import { ensureSessionLoaded, loadSession, type Session } from '$lib/session';
-  import Button from '$lib/components/ui/Button.svelte';
-  import Card from '$lib/components/ui/Card.svelte';
-  import ErrorMessage from '$lib/components/ui/ErrorMessage.svelte';
-  import FormField from '$lib/components/ui/FormField.svelte';
-  import Input from '$lib/components/ui/Input.svelte';
+  import { ApiError, apiJson } from '#lib/api.js';
+  import { ensureSessionLoaded, loadSession, type Session } from '#lib/session.js';
+  import Button from '#lib/components/ui/Button.svelte';
+  import Card from '#lib/components/ui/Card.svelte';
+  import ErrorMessage from '#lib/components/ui/ErrorMessage.svelte';
+  import FormField from '#lib/components/ui/FormField.svelte';
+  import Input from '#lib/components/ui/Input.svelte';
 
   let email = '';
   let password = '';

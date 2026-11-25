@@ -1,6 +1,6 @@
 # Pyroshape Skeleton
 
-Start a Slim/PHP-DI app with PostgreSQL and a Svelte 5, SvelteKit 2, TypeScript, and shadcn-svelte frontend. You can also use [MariaDB](#mariadb-or-mysql) or [another frontend](#using-another-frontend).
+Start a Slim/PHP-DI app with PostgreSQL and a Svelte 5, SvelteKit 3, TypeScript, and shadcn-svelte frontend. You can also use [MariaDB](#mariadb-or-mysql) or [another frontend](#using-another-frontend).
 
 ## Layout
 
@@ -95,7 +95,7 @@ Explicit `development` mode permits HTTP login cookies and includes the email ve
 
 ## Frontend
 
-The frontend uses SvelteKit 2, Svelte 5, TypeScript, shadcn-svelte, and Tailwind CSS 4. See [frontend setup](frontend/README.md) for supported Node.js versions.
+The frontend uses SvelteKit 3, Svelte 5, TypeScript, shadcn-svelte, and Tailwind CSS 4. See [frontend setup](frontend/README.md) for supported Node.js versions.
 
 ```bash
 cd frontend
