@@ -2,7 +2,7 @@
     "name": "tuxweb/pyroshape-skeleton",
     "description": "Starter application for Pyroshape",
     "version": "0.1.0",
-    "license": "proprietary",
+    "license": "MIT",
     "authors": [
         {
             "name": "Dino Ciuffetti",
@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "tuxweb/pyroshape": "^0.1"
+        "tuxweb/pyroshape": "^0.9"
     },
     "repositories": [
         {
@@ -20,7 +20,7 @@
                 "symlink": true,
                 "reference": "config",
                 "versions": {
-                    "tuxweb/pyroshape": "0.1.0"
+                    "tuxweb/pyroshape": "0.9.0"
                 }
             }
         }

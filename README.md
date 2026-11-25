@@ -21,11 +21,11 @@ Open [localhost:8080](http://127.0.0.1:8080). The [starter guide](apps/skeleton/
 
 ## Add Pyroshape to an app
 
-With SSH access to the repository, run these commands from your app directory.
+Run these commands from your app directory.
 
 ~~~sh
-composer config repositories.pyroshape vcs git@github.com:TuxWeb/pyroshape.git
-composer require tuxweb/pyroshape:dev-main
+composer config repositories.pyroshape vcs https://github.com/TuxWeb/pyroshape.git
+composer require 'tuxweb/pyroshape:^0.9'
 ~~~
 
 Commit your app's Composer lockfile to pin the framework revision. The [starter's app class](apps/skeleton/src/App.php) shows how an app extends the framework.
@@ -42,3 +42,7 @@ done
 ~~~
 
 The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSHAPE_TEST_POSTGRES_DSN` points to an isolated test database and `pdo_pgsql` is enabled.
+
+## License
+
+Pyroshape is released under the [MIT License](LICENSE).
