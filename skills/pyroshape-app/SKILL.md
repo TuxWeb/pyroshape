@@ -15,6 +15,7 @@ description: Develop or troubleshoot Pyroshape Core and applications that use th
 
 - For a new app, Composer integration, app routes, or frontend work, read [Application integration](references/application.md).
 - For shared Core changes, authentication, database compatibility, or HTTP and SPA routing issues, read [Core contracts](references/core-contracts.md).
+- For production artifact builds, deployment, preflight errors, or rollback, read the [production deployment guide](../../docs/operations/deploy-app.md). Start by identifying the app's target, lockfile, artifact manifest, and established release procedure.
 
 ## Verify through the affected entrypoint
 

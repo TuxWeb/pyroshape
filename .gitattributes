@@ -1,0 +1,3 @@
+# Keep repository-only applications and tests out of Composer dist archives.
+/apps export-ignore
+/tests export-ignore

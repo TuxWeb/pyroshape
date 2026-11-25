@@ -8,7 +8,7 @@ Pyroshape provides authentication, session handling, logging, JSON errors, and d
 
 Use PHP 8.5+, Composer, and Node.js 24+. The starter includes a Svelte 5, SvelteKit 3, and TypeScript frontend with shadcn-svelte components. PostgreSQL is recommended for new apps, and MariaDB is also supported.
 
-Clone the repository with `git clone https://github.com/TuxWeb/pyroshape.git` if needed. From the repository root, copy the tracked starter files and MIT license to a new sibling directory.
+Clone the repository with `git clone https://github.com/TuxWeb/pyroshape.git` if needed. The Git checkout contains the starter and demo. From the repository root, copy the tracked starter files and MIT license to a new sibling directory.
 
 ~~~sh
 mkdir ../my-app &&
@@ -62,6 +62,10 @@ If your app already requires `tuxweb/pyroshape` from the 0.9.0 release, remove t
 
 If you previously added the `repositories.pyroshape` GitHub entry, run `composer config --unset repositories.pyroshape` to let Composer resolve the package through Packagist.
 
+## Deploy an app
+
+Build the application from its lockfiles, validate the exact artifact, and check the app through its public URL after activation. The [production deployment guide](docs/operations/deploy-app.md) covers preflight failures, runtime settings, smoke checks, and rollback for developers and coding agents.
+
 ## Work with Codex or Claude Code
 
 Open the project directory in your coding agent and start with its `AGENTS.md`. A standalone app includes the [starter instructions](apps/skeleton/AGENTS.md) and [delivery workflow](apps/skeleton/SKILL.md). When working in this repository, use the [repository instructions](AGENTS.md) and [Pyroshape app skill](skills/pyroshape-app/SKILL.md). The [demo](apps/demo/README.md) shows authenticated CRUD for projects and tasks.
@@ -72,7 +76,7 @@ Both the [framework checkout](CLAUDE.md) and the [starter](apps/skeleton/CLAUDE.
 
 ## Test the core library
 
-Run from the repository root with `pdo_sqlite` enabled.
+Run from the root of a Git checkout with `pdo_sqlite` enabled.
 
 ~~~sh
 composer install
@@ -86,6 +90,8 @@ The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSH
 ## Releases
 
 Push development and documentation changes to `main` as usual. The package maintainer decides when to publish a stable release on Packagist and sets its version. Create the version tag and GitHub release only with the maintainer's explicit authorization.
+
+Before publishing, inspect the release commit's `git archive` output. Composer dist archives from commits with the export rules include Core and its baseline migration. Use a Git checkout to access the bundled apps and Core tests.
 
 ## License
 

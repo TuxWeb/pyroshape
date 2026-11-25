@@ -21,6 +21,7 @@
 
 ## Verification and Delivery
 
+- For production work, use the app's release procedure and the [Pyroshape deployment guide](https://github.com/TuxWeb/pyroshape/blob/main/docs/operations/deploy-app.md) to verify artifacts, activation, and rollback.
 - Run `npm --prefix frontend run check` and `npm --prefix frontend run build` after frontend changes.
 - Run PHP tests as separate processes: `for test_file in tests/*.php; do php "$test_file" || exit $?; done`.
 - `tests/spa_fallback.php` requires a built `public/app`. `tests/frontend_starter.php` checks the current component setup.

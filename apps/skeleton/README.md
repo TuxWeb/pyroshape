@@ -93,6 +93,8 @@ export PYROSHAPE_COOKIE_SALT="$(php -r 'echo bin2hex(random_bytes(32));')"
 
 Explicit `development` mode permits HTTP login cookies and includes the email verification token in the registration response. Keep the same keys while testing existing sessions across restarts. For deployments, use `PYROSHAPE_ENVIRONMENT=production`, HTTPS, stable secrets supplied through the process environment, and a runtime database role with only the privileges it needs.
 
+See the [Pyroshape production deployment guide](https://github.com/TuxWeb/pyroshape/blob/main/docs/operations/deploy-app.md) for artifact validation, smoke checks, and rollback.
+
 ## Frontend
 
 The frontend uses SvelteKit 3, Svelte 5, TypeScript, shadcn-svelte, and Tailwind CSS 4. See [frontend setup](frontend/README.md) for supported Node.js versions.
