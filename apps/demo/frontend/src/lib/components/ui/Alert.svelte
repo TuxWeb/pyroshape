@@ -1,10 +1,14 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   type Variant = 'info' | 'success' | 'warning' | 'danger';
 
-  export let variant: Variant = 'info';
-  export let message = '';
-  let className = '';
-  export { className as class };
+  let { variant = 'info', message = '', class: className = '', children }: {
+    variant?: Variant;
+    message?: string;
+    class?: string;
+    children?: Snippet;
+  } = $props();
 
   const variants: Record<Variant, string> = {
     info: 'border-primary-200 bg-primary-50 text-primary',
@@ -16,6 +20,10 @@
 
 {#if message}
   <div class={`rounded-lg border px-4 py-3 text-sm ${variants[variant]} ${className}`} role="alert">
-    <slot>{message}</slot>
+    {#if children}
+      {@render children()}
+    {:else}
+      {message}
+    {/if}
   </div>
 {/if}

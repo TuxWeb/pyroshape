@@ -1,8 +1,9 @@
 <script lang="ts">
-  let className = '';
-  export { className as class };
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  let { class: className = '', children, ...attributes }: HTMLAttributes<HTMLElement> = $props();
 </script>
 
-<section class={`rounded-lg border border-border bg-white shadow-soft ${className}`} {...$$restProps}>
-  <slot />
+<section class={`rounded-lg border border-border bg-white shadow-soft ${className}`} {...attributes}>
+  {@render children?.()}
 </section>

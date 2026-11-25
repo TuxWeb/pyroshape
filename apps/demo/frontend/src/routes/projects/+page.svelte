@@ -65,7 +65,8 @@
     }
   }
 
-  async function submitProject() {
+  async function submitProject(event: SubmitEvent) {
+    event.preventDefault();
     formError = '';
     submitting = true;
 
@@ -142,14 +143,14 @@
   {:else}
     <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
       <Card class="p-5">
-        <form class="grid gap-4" on:submit|preventDefault={submitProject}>
+        <form class="grid gap-4" onsubmit={submitProject}>
           <div class="grid gap-1">
             <h2 class="text-base font-semibold">New project</h2>
             <p class="text-sm text-muted-foreground">Name the workspace before adding tasks.</p>
           </div>
 
           <FormField label="Name">
-            <Input bind:value={name} maxlength="120" required placeholder="Website refresh" />
+            <Input bind:value={name} maxlength={120} required placeholder="Website refresh" />
           </FormField>
 
           <FormField label="Description">
@@ -210,7 +211,7 @@
                         variant="danger"
                         class="h-9 px-3"
                         disabled={deletingId === project.id}
-                        on:click={() => (projectToDelete = project)}
+                        onclick={() => (projectToDelete = project)}
                       >
                         Delete
                       </Button>
@@ -233,8 +234,8 @@
   confirmLabel="Delete project"
   confirmVariant="danger"
   confirming={deletingId !== null}
-  on:close={() => (projectToDelete = null)}
-  on:confirm={confirmDeleteProject}
+  onclose={() => (projectToDelete = null)}
+  onconfirm={confirmDeleteProject}
 >
   This action cannot be undone.
 </Modal>

@@ -1,12 +1,15 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { goto } from '$app/navigation';
   import { session, logout } from '#lib/session.ts';
   import Alert from '#lib/components/ui/Alert.svelte';
   import Button from '#lib/components/ui/Button.svelte';
 
-  let logoutError = '';
-  let loggingOut = false;
-  let mobileNavOpen = false;
+  let { children }: { children?: Snippet } = $props();
+
+  let logoutError = $state('');
+  let loggingOut = $state(false);
+  let mobileNavOpen = $state(false);
 
   const navItems = [{ href: '/projects', label: 'Projects' }];
 
@@ -50,14 +53,14 @@
       <div class="flex items-center gap-2">
         {#if $session.authenticated}
           <span class="hidden max-w-[14rem] truncate text-sm text-muted-foreground lg:block">{$session.email}</span>
-          <Button variant="light" type="button" class="hidden h-9 px-3 sm:inline-flex" disabled={loggingOut} on:click={signOut}>
+          <Button variant="light" type="button" class="hidden h-9 px-3 sm:inline-flex" disabled={loggingOut} onclick={signOut}>
             {loggingOut ? 'Logging out...' : 'Logout'}
           </Button>
           <button
             class="rounded-lg border border-border bg-white p-2 text-muted-foreground shadow-sm hover:bg-primary-50 hover:text-primary md:hidden"
             type="button"
             aria-label="Toggle navigation"
-            on:click={() => (mobileNavOpen = !mobileNavOpen)}
+            onclick={() => (mobileNavOpen = !mobileNavOpen)}
           >
             =
           </button>
@@ -72,7 +75,7 @@
       <div class="border-t border-border bg-white px-4 py-3 md:hidden">
         <div class="mx-auto grid max-w-7xl gap-1 text-sm font-medium text-muted-foreground">
           {#each navItems as item}
-            <a class="rounded-lg px-3 py-2 hover:bg-primary-50 hover:text-primary" href={item.href} on:click={() => (mobileNavOpen = false)}>
+            <a class="rounded-lg px-3 py-2 hover:bg-primary-50 hover:text-primary" href={item.href} onclick={() => (mobileNavOpen = false)}>
               {item.label}
             </a>
           {/each}
@@ -80,7 +83,7 @@
             class="rounded-lg px-3 py-2 text-left text-destructive hover:bg-destructive/10"
             type="button"
             disabled={loggingOut}
-            on:click={signOut}
+            onclick={signOut}
           >
             {loggingOut ? 'Logging out...' : 'Logout'}
           </button>
@@ -91,6 +94,6 @@
 
   <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
     <Alert variant="danger" message={logoutError} class="mb-4" />
-    <slot />
+    {@render children?.()}
   </main>
 </div>

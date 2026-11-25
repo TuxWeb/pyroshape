@@ -10,13 +10,13 @@
   import Input from '#lib/components/ui/Input.svelte';
   import LoadingState from '#lib/components/ui/LoadingState.svelte';
 
-  let currentPassword = '';
-  let newPassword = '';
-  let confirmPassword = '';
-  let error = '';
-  let success = '';
-  let loading = true;
-  let submitting = false;
+  let currentPassword = $state('');
+  let newPassword = $state('');
+  let confirmPassword = $state('');
+  let error = $state('');
+  let success = $state('');
+  let loading = $state(true);
+  let submitting = $state(false);
 
   onMount(async () => {
     const current = await ensureSessionLoaded();
@@ -28,7 +28,8 @@
     loading = false;
   });
 
-  async function submit() {
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
     error = '';
     success = '';
 
@@ -65,7 +66,7 @@
     </div>
 
     <Card class="p-5">
-      <form class="grid gap-4" on:submit|preventDefault={submit}>
+      <form class="grid gap-4" onsubmit={submit}>
         <FormField label="Current password">
           <Input bind:value={currentPassword} type="password" autocomplete="current-password" required />
         </FormField>

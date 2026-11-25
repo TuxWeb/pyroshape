@@ -1,7 +1,7 @@
 <script lang="ts">
   import Alert from '#lib/components/ui/Alert.svelte';
 
-  export let message = '';
+  let { message = '' }: { message?: string } = $props();
 </script>
 
 <Alert variant="danger" {message} />

@@ -1,7 +1,5 @@
 <script lang="ts">
-  export let label = 'Loading';
-  let className = '';
-  export { className as class };
+  let { label = 'Loading', class: className = '' }: { label?: string; class?: string } = $props();
 </script>
 
 <span class={`inline-flex items-center gap-2 text-sm text-muted-foreground ${className}`}>

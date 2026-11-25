@@ -20,7 +20,8 @@
   let verificationLink = '';
   let submitting = false;
 
-  async function submit() {
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
     error = '';
     message = '';
     verificationLink = '';
@@ -58,13 +59,13 @@
   </div>
 
   <Card class="p-5">
-    <form class="grid gap-4" on:submit|preventDefault={submit}>
+    <form class="grid gap-4" onsubmit={submit}>
       <FormField label="Email">
         <Input bind:value={email} type="email" autocomplete="email" required />
       </FormField>
 
       <FormField label="Password">
-        <Input bind:value={password} type="password" autocomplete="new-password" minlength="8" required />
+        <Input bind:value={password} type="password" autocomplete="new-password" minlength={8} required />
       </FormField>
 
       <FormField label="Display name">

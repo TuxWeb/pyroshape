@@ -2,9 +2,11 @@
   import { goto } from '$app/navigation';
   import { session, logout } from '#lib/session.js';
   import Button from '#lib/components/ui/Button.svelte';
+  import type { Snippet } from 'svelte';
 
-  let logoutError = '';
-  let loggingOut = false;
+  let { children }: { children: Snippet } = $props();
+  let logoutError = $state('');
+  let loggingOut = $state(false);
 
   async function signOut() {
     logoutError = '';
@@ -48,6 +50,6 @@
       </div>
     {/if}
 
-    <slot />
+    {@render children()}
   </main>
 </div>

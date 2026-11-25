@@ -9,10 +9,10 @@
   import FormField from '#lib/components/ui/FormField.svelte';
   import Input from '#lib/components/ui/Input.svelte';
 
-  let email = '';
-  let password = '';
-  let error = '';
-  let submitting = false;
+  let email = $state('');
+  let password = $state('');
+  let error = $state('');
+  let submitting = $state(false);
 
   onMount(async () => {
     const current = await ensureSessionLoaded();
@@ -21,7 +21,8 @@
     }
   });
 
-  async function submit() {
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
     error = '';
     submitting = true;
 
@@ -47,7 +48,7 @@
   </div>
 
   <Card class="p-5">
-    <form class="grid gap-4" on:submit|preventDefault={submit}>
+    <form class="grid gap-4" onsubmit={submit}>
       <FormField label="Email">
         <Input bind:value={email} type="email" autocomplete="email" required />
       </FormField>

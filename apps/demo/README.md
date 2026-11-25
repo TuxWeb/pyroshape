@@ -4,7 +4,7 @@ The demo uses the monorepo's `tuxweb-it/pyroshape` package to show authenticated
 
 ## Install
 
-Run these commands from `apps/demo` with PHP 8.5 or later, Composer, and Node.js 22.17 or a later release in the 22.x line, or Node.js 24 or later.
+Run these commands from `apps/demo` with PHP 8.5 or later, Composer, and Node.js 24 or later.
 
 ```bash
 composer install

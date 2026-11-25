@@ -3,10 +3,13 @@
 
   type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'light';
 
-  export let variant: Variant = 'primary';
-  export let type: HTMLButtonAttributes['type'] = 'button';
-  let className = '';
-  export { className as class };
+  let {
+    variant = 'primary',
+    type = 'button',
+    class: className = '',
+    children,
+    ...attributes
+  }: HTMLButtonAttributes & { variant?: Variant } = $props();
 
   const variants: Record<Variant, string> = {
     primary: 'bg-primary text-primary-foreground hover:bg-primary-800 focus:ring-primary/25',
@@ -20,8 +23,7 @@
 <button
   class={`inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium shadow-sm transition focus:outline-none focus:ring-4 disabled:pointer-events-none disabled:opacity-50 ${variants[variant]} ${className}`}
   {type}
-  on:click
-  {...$$restProps}
+  {...attributes}
 >
-  <slot />
+  {@render children?.()}
 </button>

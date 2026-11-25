@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Alert, AlertDescription } from './alert';
-  export let message = '';
+
+  let { message = '' }: { message?: string } = $props();
 </script>
 
 {#if message}

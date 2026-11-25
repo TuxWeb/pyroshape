@@ -103,7 +103,7 @@ Use shadcn-svelte as the project's Svelte 5/Tailwind CSS 4 component system:
 
 - Component source is checked in under `frontend/src/lib/components/ui/<component>/`; shadcn-svelte is a CLI, not a runtime package dependency.
 - Keep `frontend/components.json` configured with the Nova style, official registry, CSS path, and `#lib` aliases. Run `npx shadcn-svelte@latest add <component>` from `frontend/` to add components.
-- Keep Bits UI, Tailwind Variants, `cn`, Lucide, and `tw-animate-css` installed as required by the checked-in components.
+- Keep Tailwind Variants, `cn`, Lucide, and `tw-animate-css` installed as required by the checked-in components. Check that dependencies introduced by new components support the app's SvelteKit version.
 - Configure semantic CSS variables and Tailwind mappings in `frontend/src/app.css`. Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
 - Reuse the uppercase Pyroshape wrappers for app-specific Button variants, Input bindings, Card spacing, FormField labels, LoadingState, and ErrorMessage.
 - Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, with frontend code in each app.
@@ -119,7 +119,7 @@ Frontend quality rules:
 - Guard route detail pages against stale async responses when ids change.
 - Use `ApiError.message` for backend validation messages.
 
-Svelte 5 event handling: use callback props such as `<Button onclick={signOut}>`. Local wrappers must forward native attributes and callbacks to the shadcn component; do not use legacy `on:click` on the Button wrapper. Preserve `$bindable` for wrapped inputs.
+Use Svelte 5 callback props such as `<Button onclick={signOut}>`. Forward native attributes and callbacks through wrappers and preserve `$bindable` for wrapped inputs.
 
 ## Resource Slice Pattern
 

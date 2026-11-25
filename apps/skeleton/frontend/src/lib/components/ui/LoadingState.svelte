@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Spinner } from './spinner';
 
-  export let label = 'Loading...';
+  let { label = 'Loading...' }: { label?: string } = $props();
 </script>
 
 <div class="flex items-center gap-3 rounded-lg border border-border bg-white px-5 py-4 text-sm text-muted-foreground">

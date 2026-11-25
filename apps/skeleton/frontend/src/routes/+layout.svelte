@@ -1,8 +1,11 @@
 <script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
+  import type { LayoutProps } from './$types';
   import { ensureSessionLoaded } from '#lib/session.js';
   import AppShell from '#lib/components/layout/AppShell.svelte';
+
+  let { children }: LayoutProps = $props();
 
   onMount(() => {
     ensureSessionLoaded();
@@ -18,5 +21,5 @@
 </svelte:head>
 
 <AppShell>
-  <slot />
+  {@render children()}
 </AppShell>

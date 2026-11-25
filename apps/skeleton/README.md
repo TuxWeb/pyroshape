@@ -14,7 +14,7 @@ Start a Slim/PHP-DI app with PostgreSQL and a Svelte 5, SvelteKit 3, TypeScript,
 
 ## Quick start
 
-Use PHP 8.5+, Composer, Node.js 24, and PostgreSQL for the default setup. Run the commands from the starter directory or a [standalone copy](#using-the-starter-for-a-separate-app).
+Use PHP 8.5+, Composer, Node.js 24+, and PostgreSQL for the default setup. Run the commands from the starter directory or a [standalone copy](#using-the-starter-for-a-separate-app).
 
 ```bash
 composer install

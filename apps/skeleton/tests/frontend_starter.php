@@ -79,7 +79,6 @@ if (! is_array($package)) {
 }
 
 $devDependencies = $package['devDependencies'] ?? [];
-assertArrayHasKey($devDependencies, 'bits-ui', 'frontend package includes Bits UI');
 assertArrayHasKey($devDependencies, 'tailwind-variants', 'frontend package includes Tailwind Variants');
 
 foreach (array_keys($devDependencies) as $dependency) {

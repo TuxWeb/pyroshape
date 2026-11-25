@@ -130,7 +130,8 @@
     }
   }
 
-  async function saveProject() {
+  async function saveProject(event: SubmitEvent) {
+    event.preventDefault();
     if (!project) {
       return;
     }
@@ -152,7 +153,8 @@
     }
   }
 
-  async function submitTask() {
+  async function submitTask(event: SubmitEvent) {
+    event.preventDefault();
     if (!project) {
       return;
     }
@@ -273,14 +275,14 @@
     <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
       <div class="grid content-start gap-6">
         <Card class="p-5">
-          <form class="grid gap-4" on:submit|preventDefault={saveProject}>
+          <form class="grid gap-4" onsubmit={saveProject}>
             <div class="grid gap-1">
               <h2 class="text-base font-semibold">Project metadata</h2>
               <p class="text-sm text-muted-foreground">Keep the project name concise for navigation.</p>
             </div>
 
             <FormField label="Name">
-              <Input bind:value={projectName} maxlength="120" required />
+              <Input bind:value={projectName} maxlength={120} required />
             </FormField>
 
             <FormField label="Description">
@@ -322,7 +324,7 @@
 
       <div class="grid min-w-0 content-start gap-4">
         <Card class="p-5">
-          <form class="grid gap-4" on:submit|preventDefault={submitTask}>
+          <form class="grid gap-4" onsubmit={submitTask}>
             <div class="grid gap-1">
               <h2 class="text-base font-semibold">New task</h2>
               <p class="text-sm text-muted-foreground">Add a task to this project.</p>
@@ -330,7 +332,7 @@
 
             <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
               <FormField label="Title">
-                <Input bind:value={newTaskTitle} maxlength="180" required />
+                <Input bind:value={newTaskTitle} maxlength={180} required />
               </FormField>
               <Button type="submit" class="w-full sm:w-auto" disabled={creatingTask}>
                 {creatingTask ? 'Adding...' : 'Add task'}
@@ -354,7 +356,7 @@
                       type="checkbox"
                       checked={task.completed}
                       disabled={savingTaskId === task.id}
-                      on:change={(event) => toggleTask(task, event)}
+                      onchange={(event) => toggleTask(task, event)}
                     />
                     <span class="sr-only">Complete task</span>
                   </label>
@@ -369,7 +371,7 @@
                     <Input
                       bind:value={taskDrafts[task.id]}
                       class={task.completed ? 'line-through decoration-2' : ''}
-                      maxlength="180"
+                      maxlength={180}
                       aria-label="Task title"
                       disabled={savingTaskId === task.id || deletingTaskId === task.id}
                     />
@@ -380,7 +382,7 @@
                       variant="secondary"
                       class="h-9 px-3"
                       disabled={savingTaskId === task.id || deletingTaskId === task.id}
-                      on:click={() => saveTaskTitle(task)}
+                      onclick={() => saveTaskTitle(task)}
                     >
                       {savingTaskId === task.id ? 'Saving...' : 'Save'}
                     </Button>
@@ -388,7 +390,7 @@
                       variant="danger"
                       class="h-9 px-3"
                       disabled={deletingTaskId === task.id || savingTaskId === task.id}
-                      on:click={() => (taskToDelete = task)}
+                      onclick={() => (taskToDelete = task)}
                     >
                       Delete
                     </Button>
@@ -410,8 +412,8 @@
   confirmLabel="Delete task"
   confirmVariant="danger"
   confirming={deletingTaskId !== null}
-  on:close={() => (taskToDelete = null)}
-  on:confirm={confirmDeleteTask}
+  onclose={() => (taskToDelete = null)}
+  onconfirm={confirmDeleteTask}
 >
   This action cannot be undone.
 </Modal>

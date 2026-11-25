@@ -6,7 +6,7 @@ Pyroshape provides authentication, session handling, logging, JSON errors, and d
 
 ## Start a new app
 
-Use PHP 8.5+, Composer, and Node.js 24. The starter includes a Svelte 5, SvelteKit 3, and TypeScript frontend with shadcn-svelte components. PostgreSQL is recommended for new apps, and MariaDB is also supported.
+Use PHP 8.5+, Composer, and Node.js 24+. The starter includes a Svelte 5, SvelteKit 3, and TypeScript frontend with shadcn-svelte components. PostgreSQL is recommended for new apps, and MariaDB is also supported.
 
 Clone the repository with `git clone https://github.com/TuxWeb/pyroshape.git` if needed. From the repository root, copy the tracked starter files and MIT license to a new sibling directory.
 

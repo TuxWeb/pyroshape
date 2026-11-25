@@ -12,15 +12,16 @@
     verificationToken?: string;
   };
 
-  let email = '';
-  let password = '';
-  let nickname = '';
-  let error = '';
-  let message = '';
-  let verificationLink = '';
-  let submitting = false;
+  let email = $state('');
+  let password = $state('');
+  let nickname = $state('');
+  let error = $state('');
+  let message = $state('');
+  let verificationLink = $state('');
+  let submitting = $state(false);
 
-  async function submit() {
+  async function submit(event: SubmitEvent) {
+    event.preventDefault();
     error = '';
     message = '';
     verificationLink = '';
@@ -58,7 +59,7 @@
   </div>
 
   <Card class="p-5">
-    <form class="grid gap-4" on:submit|preventDefault={submit}>
+    <form class="grid gap-4" onsubmit={submit}>
       <FormField label="Email">
         <Input bind:value={email} type="email" autocomplete="email" required />
       </FormField>

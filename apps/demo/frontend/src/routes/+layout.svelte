@@ -3,6 +3,9 @@
   import { onMount } from 'svelte';
   import { ensureSessionLoaded } from '#lib/session.ts';
   import AppShell from '#lib/components/layout/AppShell.svelte';
+  import type { LayoutProps } from './$types';
+
+  let { children }: LayoutProps = $props();
 
   onMount(() => {
     ensureSessionLoaded();
@@ -17,6 +20,4 @@
   />
 </svelte:head>
 
-<AppShell>
-  <slot />
-</AppShell>
+<AppShell {children} />

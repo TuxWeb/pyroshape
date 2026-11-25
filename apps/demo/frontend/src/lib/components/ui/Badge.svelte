@@ -1,9 +1,13 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
+
   type Variant = 'blue' | 'green' | 'gray' | 'red' | 'amber';
 
-  export let variant: Variant = 'gray';
-  let className = '';
-  export { className as class };
+  let { variant = 'gray', class: className = '', children }: {
+    variant?: Variant;
+    class?: string;
+    children?: Snippet;
+  } = $props();
 
   const variants: Record<Variant, string> = {
     blue: 'bg-primary-50 text-primary ring-primary-200',
@@ -15,5 +19,5 @@
 </script>
 
 <span class={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${variants[variant]} ${className}`}>
-  <slot />
+  {@render children?.()}
 </span>

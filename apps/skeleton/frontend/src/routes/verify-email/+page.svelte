@@ -4,8 +4,8 @@
   import Button from '#lib/components/ui/Button.svelte';
   import Card from '#lib/components/ui/Card.svelte';
 
-  let status: 'loading' | 'success' | 'error' = 'loading';
-  let message = 'Checking verification link...';
+  let status: 'loading' | 'success' | 'error' = $state('loading');
+  let message = $state('Checking verification link...');
 
   onMount(async () => {
     const token = new URL(window.location.href).searchParams.get('token') ?? '';

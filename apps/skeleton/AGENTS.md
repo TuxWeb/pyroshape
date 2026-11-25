@@ -5,17 +5,17 @@
 - `apps/skeleton/` is the starter in the Pyroshape monorepo. Core lives at the repository root and `apps/demo/` is the reference app.
 - Backend: PHP/Slim/PHP-DI, Composer dependency `tuxweb-it/pyroshape`, app namespace `TuxWeb\PyroshapeSkeleton`.
 - Composer installs Core through the path repository at `../..` in the monorepo and through Packagist in standalone copies. Load dependencies through the app’s `vendor/autoload.php`.
-- Frontend defaults to SvelteKit 3, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. Static SPA output goes to `public/app`, served by PHP/Slim.
+- Frontend requires Node.js 24+ and uses SvelteKit 3, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. The official static adapter writes the SPA to `public/app`, served by PHP/Slim.
 - PostgreSQL is the default development database. MariaDB and MySQL use the existing `pdo_mysql` migration. Follow the [README](README.md#local-authentication) for DSNs and schema commands.
 
 ## UI Conventions
 
 - Use shadcn-svelte as the component system for the starter.
-- Official shadcn sources live in `frontend/src/lib/components/ui/<component>/`; uppercase Pyroshape components wrap them for app-specific APIs and sizing.
+- shadcn-svelte component source lives in `frontend/src/lib/components/ui/<component>/`; uppercase Pyroshape components wrap it for app-specific APIs and sizing.
 - `frontend/components.json` configures the Nova style, official registry, and `#lib` aliases. Run `npx shadcn-svelte@latest add <component>` from `frontend/` to add components.
 - Theme variables and Tailwind mappings live in `frontend/src/app.css`; preserve the teal primary color. Use `cn` from `#lib/utils.js` for class merging.
 - Button variants: `primary` → `default`, `secondary` → `outline`, `ghost` → `ghost`, `danger` → `destructive`.
-- Use Svelte 5 `onclick` callbacks on Button wrappers. Preserve Input `bind:value` and pass numeric constraints as numbers.
+- Use Svelte 5 props, snippets, and event attributes such as `onclick`. Preserve Input `bind:value` and pass numeric constraints as numbers.
 - Keep typed API calls in `#lib/api.js` and domain clients. Reuse session helpers for authentication and logout.
 - Demo UI patterns may use a different component system; adapt them to this project's shadcn components.
 

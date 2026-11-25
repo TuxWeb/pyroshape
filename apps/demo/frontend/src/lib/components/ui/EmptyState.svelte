@@ -1,6 +1,7 @@
 <script lang="ts">
-  export let title: string;
-  export let description: string;
+  import type { Snippet } from 'svelte';
+
+  let { title, description, children }: { title: string; description: string; children?: Snippet } = $props();
 </script>
 
 <section class="grid gap-3 rounded-lg border border-dashed border-border bg-white px-5 py-8 text-center">
@@ -9,5 +10,5 @@
     <p class="text-sm text-muted-foreground">{description}</p>
   </div>
 
-  <slot />
+  {@render children?.()}
 </section>
