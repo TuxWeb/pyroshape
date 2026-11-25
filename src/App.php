@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core;
+namespace TuxWeb\Pyroshape\Core;
 
-use Dam2k\Pyroshape\Core\Controllers\AuthController;
-use Dam2k\Pyroshape\Core\Controllers\HealthController;
-use Dam2k\Pyroshape\Core\Database\PdoFactory;
-use Dam2k\Pyroshape\Core\Exceptions\ConfigNotValidException;
-use Dam2k\Pyroshape\Core\Exceptions\JsonErrorHandler;
-use Dam2k\Pyroshape\Core\Logger\AccessLogger;
-use Dam2k\Pyroshape\Core\Logger\AppLogger;
-use Dam2k\Pyroshape\Core\Logger\LineLogFormat;
-use Dam2k\Pyroshape\Core\Middlewares\AddDefaultHeaders;
-use Dam2k\Pyroshape\Core\Middlewares\ContentLength;
-use Dam2k\Pyroshape\Core\Middlewares\RemoveTrailingSlash;
-use Dam2k\Pyroshape\Core\Middlewares\RequestLogger;
+use TuxWeb\Pyroshape\Core\Controllers\AuthController;
+use TuxWeb\Pyroshape\Core\Controllers\HealthController;
+use TuxWeb\Pyroshape\Core\Database\PdoFactory;
+use TuxWeb\Pyroshape\Core\Exceptions\ConfigNotValidException;
+use TuxWeb\Pyroshape\Core\Exceptions\JsonErrorHandler;
+use TuxWeb\Pyroshape\Core\Logger\AccessLogger;
+use TuxWeb\Pyroshape\Core\Logger\AppLogger;
+use TuxWeb\Pyroshape\Core\Logger\LineLogFormat;
+use TuxWeb\Pyroshape\Core\Middlewares\AddDefaultHeaders;
+use TuxWeb\Pyroshape\Core\Middlewares\ContentLength;
+use TuxWeb\Pyroshape\Core\Middlewares\RemoveTrailingSlash;
+use TuxWeb\Pyroshape\Core\Middlewares\RequestLogger;
 use DI\Bridge\Slim\Bridge;
 use DI\Container;
 use DI\ContainerBuilder;

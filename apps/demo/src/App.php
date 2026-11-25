@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\PyroshapeDemo;
+namespace TuxWeb\PyroshapeDemo;
 
-use Dam2k\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
-use Dam2k\Pyroshape\Core\Middlewares\Auth\RequireAuth;
-use Dam2k\PyroshapeDemo\Exceptions\ConfigNotValidException;
-use Dam2k\PyroshapeDemo\Controllers\ProjectController;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireAuth;
+use TuxWeb\PyroshapeDemo\Exceptions\ConfigNotValidException;
+use TuxWeb\PyroshapeDemo\Controllers\ProjectController;
 
-class App extends \Dam2k\Pyroshape\Core\App
+class App extends \TuxWeb\Pyroshape\Core\App
 {
     public function __construct(string $config)
     {
         try {
             parent::__construct($config);
-        } catch (\Dam2k\Pyroshape\Core\Exceptions\ConfigNotValidException $exception) {
+        } catch (\TuxWeb\Pyroshape\Core\Exceptions\ConfigNotValidException $exception) {
             throw new ConfigNotValidException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }

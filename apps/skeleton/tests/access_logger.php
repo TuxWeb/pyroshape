@@ -2,16 +2,26 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeSkeleton\App;
+use TuxWeb\PyroshapeSkeleton\App;
 use Monolog\Logger;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$appLog = __DIR__ . '/../tmp/test-app.log';
-$accessLog = __DIR__ . '/../tmp/test-access.log';
-@unlink($appLog);
-@unlink($accessLog);
+$tmpDir = __DIR__ . '/../tmp';
+if (!is_dir($tmpDir) && !mkdir($tmpDir, 0775, true) && !is_dir($tmpDir)) {
+    throw new RuntimeException('Cannot create the temporary test directory');
+}
+
+$testPrefix = $tmpDir . '/test-access-logger-' . bin2hex(random_bytes(8));
+$appLog = $testPrefix . '-app.log';
+$accessLog = $testPrefix . '-access.log';
+$configFile = $testPrefix . '-config.php';
+register_shutdown_function(static function () use ($appLog, $accessLog, $configFile): void {
+    @unlink($appLog);
+    @unlink($accessLog);
+    @unlink($configFile);
+});
 
 $config = [
     'settings' => [
@@ -40,7 +50,6 @@ $config = [
     ],
 ];
 
-$configFile = __DIR__ . '/../tmp/test-access-logger-config.php';
 file_put_contents($configFile, '<?php return ' . var_export($config, true) . ';');
 
 $app = new App($configFile);

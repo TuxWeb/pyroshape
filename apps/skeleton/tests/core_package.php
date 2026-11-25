@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-if (!class_exists(\Dam2k\Pyroshape\Core\App::class)) {
+if (!class_exists(\TuxWeb\Pyroshape\Core\App::class)) {
     fwrite(STDERR, "Core App class not autoloadable\n");
     exit(1);
 }
 
-$packageName = 'dam2k/pyroshape-core';
+$packageName = 'tuxweb/pyroshape';
 if (!\Composer\InstalledVersions::isInstalled($packageName)) {
     fwrite(STDERR, "Core package is not installed by Composer\n");
     exit(1);
@@ -17,7 +17,7 @@ if (!\Composer\InstalledVersions::isInstalled($packageName)) {
 
 $installPath = \Composer\InstalledVersions::getInstallPath($packageName);
 $expectedPrefix = $installPath === null ? false : realpath($installPath);
-$coreAppFile = (new ReflectionClass(\Dam2k\Pyroshape\Core\App::class))->getFileName();
+$coreAppFile = (new ReflectionClass(\TuxWeb\Pyroshape\Core\App::class))->getFileName();
 $resolvedCoreAppFile = $coreAppFile === false ? false : realpath($coreAppFile);
 
 if (

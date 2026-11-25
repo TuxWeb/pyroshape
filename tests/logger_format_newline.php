@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\Pyroshape\Core\App;
+use TuxWeb\Pyroshape\Core\App;
 use Monolog\Logger;
 
 require __DIR__ . '/../vendor/autoload.php';

@@ -3,6 +3,7 @@
 /.superpowers/
 
 /vendor/
+/composer.lock
 /tmp/
 /logs/
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Database;
+namespace TuxWeb\Pyroshape\Core\Database;
 
 use PDO;
 use Psr\Container\ContainerInterface;

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Auth;
+namespace TuxWeb\Pyroshape\Core\Auth;
 
-use Dam2k\Pyroshape\Core\Auth\Tokens\AccessToken;
-use Dam2k\Pyroshape\Core\Auth\Tokens\RefreshToken;
-use Dam2k\Pyroshape\Core\Auth\Tokens\TokenHandler;
-use Dam2k\Pyroshape\Core\Http\EncryptedCookies;
+use TuxWeb\Pyroshape\Core\Auth\Tokens\AccessToken;
+use TuxWeb\Pyroshape\Core\Auth\Tokens\RefreshToken;
+use TuxWeb\Pyroshape\Core\Auth\Tokens\TokenHandler;
+use TuxWeb\Pyroshape\Core\Http\EncryptedCookies;
 use Firebase\JWT\ExpiredException;
 use InvalidArgumentException;
 use JsonException;

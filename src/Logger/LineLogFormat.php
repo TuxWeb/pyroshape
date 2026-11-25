@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Logger;
+namespace TuxWeb\Pyroshape\Core\Logger;
 
 final class LineLogFormat
 {

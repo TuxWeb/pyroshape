@@ -1,6 +1,6 @@
 {
-    "name": "dam2k/pyroshape-skeleton",
-    "description": "Pyroshape skeleton application, used to startup a pyroshape-core driven backend of reusable components.",
+    "name": "tuxweb/pyroshape-skeleton",
+    "description": "Starter application for Pyroshape",
     "version": "0.1.0",
     "license": "proprietary",
     "authors": [
@@ -10,17 +10,24 @@
         }
     ],
     "require": {
-        "dam2k/pyroshape-core": "^0.7"
+        "tuxweb/pyroshape": "^0.1"
     },
     "repositories": [
-      {
-        "type": "vcs",
-        "url": "git@github.com:dam2k/pyroshape-core.git"
-      }
+        {
+            "type": "path",
+            "url": "../..",
+            "options": {
+                "symlink": true,
+                "reference": "config",
+                "versions": {
+                    "tuxweb/pyroshape": "0.1.0"
+                }
+            }
+        }
     ],
     "autoload": {
         "psr-4": {
-            "Dam2k\\PyroshapeSkeleton\\": "src/"
+            "TuxWeb\\PyroshapeSkeleton\\": "src/"
         }
     }
 }

@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeDemo\App;
+use TuxWeb\PyroshapeDemo\App;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/fixtures/runtime_environment.php';
 
 $publicAppDir = __DIR__ . '/../public/app';
 $indexFile = $publicAppDir . '/index.html';

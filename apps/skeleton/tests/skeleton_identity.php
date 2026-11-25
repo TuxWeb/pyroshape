@@ -5,13 +5,13 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 
 $composer = json_decode((string) file_get_contents($root . '/composer.json'), true, flags: JSON_THROW_ON_ERROR);
-if (($composer['name'] ?? null) !== 'dam2k/pyroshape-skeleton') {
-    fwrite(STDERR, "Composer package is not dam2k/pyroshape-skeleton\n");
+if (($composer['name'] ?? null) !== 'tuxweb/pyroshape-skeleton') {
+    fwrite(STDERR, "Composer package is not tuxweb/pyroshape-skeleton\n");
     exit(1);
 }
 
-if (!isset($composer['autoload']['psr-4']['Dam2k\\PyroshapeSkeleton\\'])) {
-    fwrite(STDERR, "Composer autoload namespace Dam2k\\PyroshapeSkeleton\\ missing\n");
+if (!isset($composer['autoload']['psr-4']['TuxWeb\\PyroshapeSkeleton\\'])) {
+    fwrite(STDERR, "Composer autoload namespace TuxWeb\\PyroshapeSkeleton\\ missing\n");
     exit(1);
 }
 
@@ -23,8 +23,8 @@ if (($frontend['name'] ?? null) !== 'pyroshape-skeleton-frontend') {
 
 require $root . '/vendor/autoload.php';
 
-if (!class_exists(\Dam2k\PyroshapeSkeleton\App::class)) {
-    fwrite(STDERR, "Dam2k\\PyroshapeSkeleton\\App is not autoloadable\n");
+if (!class_exists(\TuxWeb\PyroshapeSkeleton\App::class)) {
+    fwrite(STDERR, "TuxWeb\\PyroshapeSkeleton\\App is not autoloadable\n");
     exit(1);
 }
 

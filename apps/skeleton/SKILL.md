@@ -1,45 +1,42 @@
 ---
 name: pyroshape-app
-description: Use when creating, extending, reviewing, or troubleshooting Pyroshape apps using pyroshape-skeleton, pyroshape-core, Slim/PHP-DI, and a SvelteKit static SPA.
+description: Use when creating, extending, reviewing, or troubleshooting Pyroshape apps using the Pyroshape starter, Slim/PHP-DI, and a SvelteKit static SPA.
 ---
 
 # Pyroshape App Skill
 
-Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `dam2k/pyroshape-core`, and a SvelteKit static SPA served by PHP from `public/app`.
+Use this for Pyroshape apps: PHP 8.5 + Slim/PHP-DI backend, `tuxweb/pyroshape`, and a SvelteKit static SPA served by PHP from `public/app`.
 
 ## Repository Roles
 
-- `/home/dino/projects/pyroshape-core`: reusable backend library only. Keep it framework-level: Slim/PHP-DI bootstrap, middleware, auth primitives, logging, PDO, JSON errors, generic controllers. Do not add product/domain/frontend code here.
-- `/home/dino/projects/pyroshape-skeleton`: clean starter for new apps. Start new real projects from this.
-- `/home/dino/projects/pyroshape-demo`: reference implementation. Read/copy patterns from it for auth shell, protected SPA pages, typed API client, CRUD, and tests. Do not clone it unless the new app should include its Projects + Tasks demo domain.
+- The monorepo root contains Core, the reusable Slim/PHP-DI package for middleware, auth, logging, PDO, JSON errors, and generic controllers.
+- `apps/skeleton/` is the starter for new projects.
+- `apps/demo/` shows the auth shell, protected SPA pages, typed API client, CRUD, and tests.
 
-## Codex Delivery Rules
+## Delivery Rules
 
-- Before changing code, inspect `pyroshape-core`, `pyroshape-skeleton`, and `pyroshape-demo` patterns relevant to the task.
-- Keep project-specific domain logic in the app repo. Change `pyroshape-core` only for reusable primitives that at least two apps would need.
-- Prefer copying proven demo patterns into the new app before inventing new architecture.
-- Build a vertical slice end to end: migration, repository, controller, route, backend test, TS client, Svelte page, frontend check/build.
-- Keep routes thin. Put persistence in `src/Domain/<Domain>/`, HTTP validation/response shaping in controllers, and UI data calls in `frontend/src/lib/domain/`.
-- Preserve generated output boundaries: `vendor/`, `node_modules/`, `public/app`, logs, and caches are not source.
-- Read `docs/ai-delivery.md` for Codex delivery workflow, `docs/frontend-style-guide.md` for UI adaptation, and `docs/github-repositories.md` before publishing repos.
+- Inspect the relevant Core, starter, and demo contracts before changing them.
+- Keep project domain logic in the app. Put persistence in `src/Domain/<Domain>/`, HTTP validation and response shaping in controllers, and UI data calls in `frontend/src/lib/domain/`.
+- Build a vertical slice when a feature needs all layers: migration, repository, controller, route, backend test, TypeScript client, Svelte page, frontend check and build.
+- Keep `vendor/`, `node_modules/`, `public/app`, logs, and caches out of Git.
+- See `docs/ai-delivery.md` for the delivery workflow and `docs/frontend-style-guide.md` for UI adaptation.
 
-## Starting A New App
+## Starting a New App
 
-1. Copy `pyroshape-skeleton` to the new project directory.
-2. Rename Composer package, PHP namespace, app wrapper, README, and tests from skeleton names to the new app name.
-3. Keep the GitHub VCS repository for `dam2k/pyroshape-core` configured in `composer.json`. If explicitly developing core locally, a Composer path repository can point to `../pyroshape-core`; do not make a sibling checkout a runtime or test requirement.
-4. Run Composer through `/home/dino/temp/prove/php/composer.phar install`.
-5. Build frontend from `frontend/` with `npm ci`, `npm run check`, `npm run build`. Use `npm install` when intentionally changing dependencies and commit the updated lockfile.
-6. Serve with `php -S 127.0.0.1:8080 -t public`.
+1. Copy `apps/skeleton/` into the new project directory. Rename its Composer package, PHP namespace, frontend package, and identity assertions in the tests.
+2. Keep the Composer path repository pointed at the monorepo root for apps inside the monorepo. For a standalone app, configure the GitHub VCS repository and update the lockfile as described in the starter README.
+3. Run `composer install` from the app directory.
+4. Build the frontend with `npm --prefix frontend ci`, `npm --prefix frontend run check`, and `npm --prefix frontend run build`.
+5. Serve with `php -S 127.0.0.1:8080 -t public`. See the starter README for local auth settings and the database schema.
 
-After creating the app, immediately verify the empty starter before adding domain code. This separates scaffold problems from feature problems.
+Verify the starter before adding domain code.
 
 ## Backend Pattern
 
 New apps extend core with a thin wrapper:
 
 ```php
-class App extends \Dam2k\Pyroshape\Core\App
+class App extends \TuxWeb\Pyroshape\Core\App
 {
     protected function setupAppRoutes(): void
     {
@@ -55,8 +52,8 @@ class App extends \Dam2k\Pyroshape\Core\App
 For authenticated app routes, use core middleware:
 
 ```php
-use Dam2k\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
-use Dam2k\Pyroshape\Core\Middlewares\Auth\RequireAuth;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireAuth;
 
 $app->group('/api', function ($group): void {
     // routes
@@ -91,7 +88,7 @@ Backend quality rules:
 - Return JSON envelopes such as `['project' => $project]`, `['projects' => $projects]`, or `['deleted' => true]`.
 - Add a focused API test for every new resource.
 
-Use `pyroshape-demo/src/Controllers/ProjectController.php`, `src/Domain/Projects/ProjectRepository.php`, and `tests/project_api.php` as the canonical CRUD pattern.
+See `src/Controllers/ProjectController.php`, `src/Domain/Projects/ProjectRepository.php`, and `tests/project_api.php` in `apps/demo/` for a complete CRUD implementation.
 
 ## Frontend Pattern
 
@@ -115,8 +112,8 @@ Use shadcn-svelte as the project's Svelte 5/Tailwind CSS 4 component system:
 - Keep Bits UI, Tailwind Variants, `cn`, Lucide, and `tw-animate-css` installed as required by the checked-in components.
 - Configure semantic CSS variables and Tailwind mappings in `frontend/src/app.css`. Use CSS-first Tailwind configuration with `@tailwindcss/vite`.
 - Reuse the uppercase Pyroshape wrappers for app-specific Button variants, Input bindings, Card spacing, FormField labels, LoadingState, and ErrorMessage.
-- Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, and no frontend code in `pyroshape-core`.
-- Promote only generic reusable primitives back to `pyroshape-skeleton`; keep demo/domain pages in `pyroshape-demo`.
+- Preserve Pyroshape structure: typed domain clients, thin route components, PHP/Slim API, with frontend code in each app.
+- Share reusable UI primitives through `apps/skeleton/` and keep demo pages in `apps/demo/`.
 
 Frontend quality rules:
 
@@ -155,47 +152,24 @@ Auth endpoints provided by core:
 - `POST /api/auth/logout`
 - `GET /api/session`
 
-Local runtime requires valid DB credentials and long JWT/cookie secrets. Placeholder `change-me-*` keys are not enough for current JWT signing and can cause `Provided key is too short` errors.
+See the starter README for the `PYROSHAPE_*` environment variables, MySQL schema, and auth setup. During local auth testing, use separate development keys and explicitly enable development mode for the verification token. If login returns HTTP 500, check the connection settings, migrations, and key lengths. If logout works via HTTP but fails in the browser, inspect the Svelte button event forwarding.
 
-Before manual browser testing:
+## When to Change Core
 
-1. Set `config/config.php` database DSN/user/password.
-2. Apply auth migration and app migrations.
-3. Use long development secrets for `jwt_refresh_token.key`, `jwt_access_token.key`, `login_cookie.key`, and `login_cookie.salt`.
-4. Rebuild frontend after Svelte changes.
-
-If login returns HTTP 500, first check DB credentials/migrations and JWT/cookie key length. If logout does nothing in the browser but works through curl, inspect the Svelte button event forwarding.
-
-## When To Change Core
-
-Acceptable `pyroshape-core` changes:
-
-- generic JSON response/request helpers
-- generic validation helpers
-- auth/session middleware improvements
-- reusable logging/database/container behavior
-- SPA fallback behavior shared by all apps
-
-Not acceptable in `pyroshape-core`:
-
-- app domain tables, repositories, controllers, or migrations
-- Svelte components or frontend assets
-- demo-specific routes or project/task logic
-- local machine config or secrets
+Keep reusable JSON helpers, generic validation, auth and session middleware, logging, database and container behavior, and the shared SPA fallback in Core. Keep app domain tables, migrations, repositories, controllers, frontend components, and local settings in the app.
 
 ## Verification Checklist
 
-Core route hook:
+Core route hook, from `apps/skeleton/`:
 
 ```bash
-cd /home/dino/projects/pyroshape-core
-php tests/app_routes_before_spa_fallback.php
+php ../../tests/app_routes_before_spa_fallback.php
 ```
 
 App backend:
 
 ```bash
-php /home/dino/temp/prove/php/composer.phar validate
+composer validate
 php tests/core_package.php
 php tests/auth_flow.php
 php tests/auth_service.php

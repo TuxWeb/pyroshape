@@ -12,6 +12,8 @@
     type Task
   } from '$lib/domain/projects';
   import { ensureSessionLoaded, session, sessionLoading } from '$lib/session';
+  import Alert from '$lib/components/ui/Alert.svelte';
+  import Badge from '$lib/components/ui/Badge.svelte';
   import Button from '$lib/components/ui/Button.svelte';
   import Card from '$lib/components/ui/Card.svelte';
   import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -19,6 +21,8 @@
   import FormField from '$lib/components/ui/FormField.svelte';
   import Input from '$lib/components/ui/Input.svelte';
   import LoadingState from '$lib/components/ui/LoadingState.svelte';
+  import Modal from '$lib/components/ui/Modal.svelte';
+  import Textarea from '$lib/components/ui/Textarea.svelte';
 
   let sessionChecked = false;
   let project: ProjectDetail | null = null;
@@ -39,9 +43,12 @@
   let creatingTask = false;
   let savingTaskId: number | null = null;
   let deletingTaskId: number | null = null;
+  let taskToDelete: Task | null = null;
 
   $: projectId = Number($page.params.id);
   $: invalidProjectId = !Number.isInteger(projectId) || projectId <= 0;
+  $: openTaskCount = project?.tasks.filter((task) => !task.completed).length ?? 0;
+  $: completedTaskCount = project?.tasks.filter((task) => task.completed).length ?? 0;
 
   $: if (loadedProjectId !== null && loadedProjectId !== projectId) {
     project = null;
@@ -70,6 +77,7 @@
     loadedProjectId = null;
     error = invalidProjectId ? 'Project not found.' : '';
     errorStatus = invalidProjectId ? 404 : null;
+    taskToDelete = null;
   }
 
   onMount(async () => {
@@ -186,16 +194,17 @@
     }
   }
 
-  async function removeTask(task: Task) {
-    if (!window.confirm(`Delete "${task.title}"?`)) {
+  async function confirmDeleteTask() {
+    if (!taskToDelete) {
       return;
     }
 
-    deletingTaskId = task.id;
+    deletingTaskId = taskToDelete.id;
     taskError = '';
 
     try {
-      await deleteTask(task.id);
+      await deleteTask(taskToDelete.id);
+      taskToDelete = null;
       loaded = false;
       await loadProject();
     } catch (caught) {
@@ -227,19 +236,26 @@
       <h1 class="break-words text-2xl font-semibold">{project?.name ?? 'Project'}</h1>
       <p class="text-sm text-muted-foreground">Edit project details and manage tasks.</p>
     </div>
+
+    {#if project}
+      <div class="flex flex-wrap gap-2">
+        <Badge variant="amber">{openTaskCount} open</Badge>
+        <Badge variant="green">{completedTaskCount} completed</Badge>
+      </div>
+    {/if}
   </div>
 
   {#if $sessionLoading}
     <LoadingState label="Loading session..." />
   {:else if !$session.authenticated}
     <EmptyState title="Not signed in" description="Sign in to manage this project.">
-      <a class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90" href="/login">
+      <a class="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary/90" href="/login">
         Go to login
       </a>
     </EmptyState>
   {:else if invalidProjectId}
     <EmptyState title="Project not found" description="The project URL does not include a valid project id.">
-      <a class="inline-flex h-10 items-center justify-center rounded-md border border-border bg-white px-4 text-sm font-medium text-foreground shadow-sm hover:bg-muted" href="/projects">
+      <a class="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-white px-4 text-sm font-medium text-foreground shadow-sm hover:bg-muted" href="/projects">
         View projects
       </a>
     </EmptyState>
@@ -247,12 +263,12 @@
     <LoadingState label="Loading project..." />
   {:else if error}
     <EmptyState title={errorStatus === 404 ? 'Project not found' : 'Project unavailable'} description={error}>
-      <a class="inline-flex h-10 items-center justify-center rounded-md border border-border bg-white px-4 text-sm font-medium text-foreground shadow-sm hover:bg-muted" href="/projects">
+      <a class="inline-flex h-10 items-center justify-center rounded-lg border border-border bg-white px-4 text-sm font-medium text-foreground shadow-sm hover:bg-muted" href="/projects">
         View projects
       </a>
     </EmptyState>
   {:else if project}
-    <div class="grid gap-6 lg:grid-cols-[22rem_minmax(0,1fr)]">
+    <div class="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
       <div class="grid content-start gap-6">
         <Card class="p-5">
           <form class="grid gap-4" on:submit|preventDefault={saveProject}>
@@ -266,11 +282,7 @@
             </FormField>
 
             <FormField label="Description">
-              <textarea
-                bind:value={projectDescription}
-                class="min-h-24 w-full resize-y rounded-md border border-input bg-white px-3 py-2 text-sm text-foreground shadow-sm outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 disabled:cursor-not-allowed disabled:opacity-50"
-                rows="4"
-              ></textarea>
+              <Textarea bind:value={projectDescription} rows={4} />
             </FormField>
 
             <ErrorMessage message={metadataError} />
@@ -281,8 +293,11 @@
           </form>
         </Card>
 
-        <Card class="grid gap-3 p-5">
-          <h2 class="text-base font-semibold">Project details</h2>
+        <Card class="grid gap-4 p-5">
+          <div class="grid gap-1">
+            <h2 class="text-base font-semibold">Project details</h2>
+            <p class="text-sm text-muted-foreground">System metadata for this workspace.</p>
+          </div>
           <dl class="grid gap-3 text-sm">
             <div class="grid gap-1">
               <dt class="text-muted-foreground">Created</dt>
@@ -294,9 +309,9 @@
             </div>
             <div class="grid gap-1">
               <dt class="text-muted-foreground">Tasks</dt>
-              <dd class="font-medium">
-                {project.tasks.filter((task) => !task.completed).length} open,
-                {project.tasks.filter((task) => task.completed).length} completed
+              <dd class="flex flex-wrap gap-2">
+                <Badge variant="amber">{openTaskCount} open</Badge>
+                <Badge variant="green">{completedTaskCount} completed</Badge>
               </dd>
             </div>
           </dl>
@@ -322,7 +337,7 @@
           </form>
         </Card>
 
-        <ErrorMessage message={taskError} />
+        <Alert variant="danger" message={taskError} />
 
         {#if project.tasks.length === 0}
           <EmptyState title="No tasks" description="Add the first task for this project." />
@@ -330,10 +345,10 @@
           <Card class="overflow-hidden">
             <div class="divide-y divide-border">
               {#each project.tasks as task}
-                <div class="grid gap-3 p-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
+                <div class="grid gap-3 p-4 hover:bg-muted/40 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center">
                   <label class="flex items-center gap-3 text-sm font-medium">
                     <input
-                      class="h-4 w-4 rounded border-input text-primary focus:ring-ring"
+                      class="h-4 w-4 rounded border-input text-primary focus:ring-4 focus:ring-primary/20"
                       type="checkbox"
                       checked={task.completed}
                       disabled={savingTaskId === task.id}
@@ -343,6 +358,12 @@
                   </label>
 
                   <div class="grid min-w-0 gap-2">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <Badge variant={task.completed ? 'green' : 'amber'}>
+                        {task.completed ? 'Completed' : 'Open'}
+                      </Badge>
+                      <span class="text-xs text-muted-foreground">Updated {formatDate(task.updatedAt)}</span>
+                    </div>
                     <Input
                       bind:value={taskDrafts[task.id]}
                       class={task.completed ? 'line-through decoration-2' : ''}
@@ -350,7 +371,6 @@
                       aria-label="Task title"
                       disabled={savingTaskId === task.id || deletingTaskId === task.id}
                     />
-                    <p class="text-xs text-muted-foreground">Updated {formatDate(task.updatedAt)}</p>
                   </div>
 
                   <div class="flex flex-wrap gap-2 sm:justify-end">
@@ -366,9 +386,9 @@
                       variant="danger"
                       class="h-9 px-3"
                       disabled={deletingTaskId === task.id || savingTaskId === task.id}
-                      on:click={() => removeTask(task)}
+                      on:click={() => (taskToDelete = task)}
                     >
-                      {deletingTaskId === task.id ? 'Deleting...' : 'Delete'}
+                      Delete
                     </Button>
                   </div>
                 </div>
@@ -380,3 +400,16 @@
     </div>
   {/if}
 </div>
+
+<Modal
+  open={taskToDelete !== null}
+  title="Delete task"
+  description={taskToDelete ? `This deletes "${taskToDelete.title}".` : ''}
+  confirmLabel="Delete task"
+  confirmVariant="danger"
+  confirming={deletingTaskId !== null}
+  on:close={() => (taskToDelete = null)}
+  on:confirm={confirmDeleteTask}
+>
+  This action cannot be undone.
+</Modal>

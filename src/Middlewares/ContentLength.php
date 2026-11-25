@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Middlewares;
+namespace TuxWeb\Pyroshape\Core\Middlewares;
 
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;

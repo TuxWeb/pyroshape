@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Http;
+namespace TuxWeb\Pyroshape\Core\Http;
 
-use Dam2k\Pyroshape\Core\Crypto\StringCrypt;
+use TuxWeb\Pyroshape\Core\Crypto\StringCrypt;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use RuntimeException;

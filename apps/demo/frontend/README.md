@@ -1,5 +1,5 @@
 # Pyroshape demo frontend
 
-SvelteKit is configured as a static SPA. `npm run build` writes the compiled app to `../public/app`, where PHP/Slim serves it.
+SvelteKit builds a static SPA. Run `npm ci`, `npm run check`, and `npm run build` from this directory. The build writes to `../public/app`, where the PHP backend serves the app and its assets.
 
-This scaffold uses Tailwind and local shadcn-svelte-style primitives in `src/lib/components/ui` for `Button`, `Input`, and `Card`. The included `components.json` keeps the project ready for adding real shadcn-svelte components later without changing the app structure.
+The interface uses Tailwind CSS and local Svelte components in `src/lib/components/ui`. See the [demo README](../README.md) for the PHP server, database setup, and runtime environment.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeSkeleton\App;
+use TuxWeb\PyroshapeSkeleton\App;
 
 require __DIR__ . '/../vendor/autoload.php';
 

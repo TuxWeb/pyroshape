@@ -6,7 +6,7 @@
 
   onMount(async () => {
     const current = await ensureSessionLoaded();
-    await goto(current.authenticated ? '/dashboard' : '/login');
+    await goto(current.authenticated ? '/projects' : '/login');
   });
 </script>
 

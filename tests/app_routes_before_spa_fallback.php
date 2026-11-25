@@ -2,41 +2,12 @@
 
 declare(strict_types=1);
 
-use Dam2k\Pyroshape\Core\App;
+use TuxWeb\Pyroshape\Core\App;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
-$autoloadCandidates = array_filter([
-    getenv('PYROSHAPE_CORE_TEST_AUTOLOAD') ?: null,
-    __DIR__ . '/../vendor/autoload.php',
-    '/tmp/pyroshape-core-test-deps/vendor/autoload.php',
-]);
-$autoload = null;
-foreach ($autoloadCandidates as $candidate) {
-    if (is_readable($candidate)) {
-        $autoload = $candidate;
-        break;
-    }
-}
-
-if ($autoload === null) {
-    throw new RuntimeException('Composer autoload file not found. Run composer install or set PYROSHAPE_CORE_TEST_AUTOLOAD.');
-}
-
-require $autoload;
-
-spl_autoload_register(static function (string $class): void {
-    $prefix = 'Dam2k\\Pyroshape\\Core\\';
-    if (!str_starts_with($class, $prefix)) {
-        return;
-    }
-
-    $file = __DIR__ . '/../src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
-    if (is_file($file)) {
-        require $file;
-    }
-});
+require __DIR__ . '/../vendor/autoload.php';
 
 final class RouteHookTestApp extends App
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeSkeleton\App;
-use Dam2k\Pyroshape\Core\Auth\AuthService;
-use Dam2k\Pyroshape\Core\Auth\UserRepository;
+use TuxWeb\PyroshapeSkeleton\App;
+use TuxWeb\Pyroshape\Core\Auth\AuthService;
+use TuxWeb\Pyroshape\Core\Auth\UserRepository;
 use DI\Container;
 use Monolog\Logger;
 use Psr\Log\AbstractLogger;

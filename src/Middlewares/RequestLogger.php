@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Middlewares;
+namespace TuxWeb\Pyroshape\Core\Middlewares;
 
-use Dam2k\Pyroshape\Core\Logger\AccessLogger;
+use TuxWeb\Pyroshape\Core\Logger\AccessLogger;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\MiddlewareInterface;

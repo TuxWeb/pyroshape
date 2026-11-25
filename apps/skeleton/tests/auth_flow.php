@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeSkeleton\App;
+use TuxWeb\PyroshapeSkeleton\App;
 use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;

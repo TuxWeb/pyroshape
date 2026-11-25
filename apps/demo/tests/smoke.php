@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeDemo\App;
-use Dam2k\PyroshapeDemo\Exceptions\ConfigNotValidException;
+use TuxWeb\PyroshapeDemo\App;
+use TuxWeb\PyroshapeDemo\Exceptions\ConfigNotValidException;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/fixtures/runtime_environment.php';
 
 $app = new App(__DIR__ . '/../config/config.php');
 $slim = $app->getSlimApp();
@@ -26,7 +27,21 @@ if ($payload !== ['status' => 'ok', 'service' => 'pyroshape']) {
     exit(1);
 }
 
-echo "smoke ok\n";
+$rotatedKey = bin2hex(random_bytes(32));
+putenv('PYROSHAPE_JWT_ACCESS_KEY=' . $rotatedKey);
+putenv('PYROSHAPE_ENVIRONMENT');
+
+$production = new App(__DIR__ . '/../config/config.php');
+$settings = $production->getSlimApp()->getContainer()->get('settings');
+if (
+    $settings['jwt_access_token']['key'] !== $rotatedKey
+    || !$settings['login_cookie']['cookieopts']['secure']
+    || $settings['emailVerification']['devExposeToken']
+) {
+    fwrite(STDERR, "Expected current environment values and secure production settings\n");
+    exit(1);
+}
+
 
 $unsafeConfigFile = __DIR__ . '/../tmp/test-unsafe-secret-config.php';
 file_put_contents($unsafeConfigFile, '<?php return ' . var_export([
@@ -81,6 +96,7 @@ try {
     @unlink($unsafeConfigFile);
     @unlink(__DIR__ . '/../tmp/test-unsafe-secret-app.log');
     @unlink(__DIR__ . '/../tmp/test-unsafe-secret-access.log');
+    echo "smoke ok\n";
     exit(0);
 }
 

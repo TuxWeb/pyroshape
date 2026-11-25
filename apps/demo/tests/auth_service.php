@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeDemo\App;
-use Dam2k\Pyroshape\Core\Auth\AuthService;
-use Dam2k\Pyroshape\Core\Auth\UserRepository;
+use TuxWeb\PyroshapeDemo\App;
+use TuxWeb\Pyroshape\Core\Auth\AuthService;
+use TuxWeb\Pyroshape\Core\Auth\UserRepository;
 use DI\Container;
 use Monolog\Logger;
+use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 use Slim\Psr7\Factory\ResponseFactory;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../vendor/autoload.php';
+require __DIR__ . '/fixtures/runtime_environment.php';
 
 function fail(string $message): never
 {
@@ -59,6 +62,45 @@ function assertClearingCookie(\Psr\Http\Message\ResponseInterface $response, str
     }
 }
 
+function assertLog(CapturingLogger $logger, string $level, string $message, array $contextSubset): void
+{
+    foreach ($logger->records as $record) {
+        if ($record['level'] !== $level || $record['message'] !== $message) {
+            continue;
+        }
+
+        foreach ($contextSubset as $key => $value) {
+            if (($record['context'][$key] ?? null) !== $value) {
+                continue 2;
+            }
+        }
+
+        return;
+    }
+
+    fail(sprintf(
+        'Missing log %s %s with context subset %s. Records: %s',
+        $level,
+        $message,
+        json_encode($contextSubset, JSON_THROW_ON_ERROR),
+        json_encode($logger->records, JSON_THROW_ON_ERROR)
+    ));
+}
+
+function assertLogCount(CapturingLogger $logger, string $level, string $message, int $expected): void
+{
+    $count = 0;
+    foreach ($logger->records as $record) {
+        if ($record['level'] === $level && $record['message'] === $message) {
+            $count++;
+        }
+    }
+
+    if ($count !== $expected) {
+        fail("Expected $expected log records for $level $message, got $count");
+    }
+}
+
 function extractCookie(\Psr\Http\Message\ResponseInterface $response, string $cookieName): string
 {
     foreach ($response->getHeader('Set-Cookie') as $header) {
@@ -88,6 +130,21 @@ class FailingRevokeUserRepository extends UserRepository
     public function revokeRefreshTokenByJti(string $jti, ?string $revokedAt = null): bool
     {
         throw new RuntimeException('simulated revoke failure');
+    }
+}
+
+final class CapturingLogger extends AbstractLogger
+{
+    /** @var list<array{level: string, message: string, context: array<string, mixed>}> */
+    public array $records = [];
+
+    public function log($level, string|\Stringable $message, array $context = []): void
+    {
+        $this->records[] = [
+            'level' => (string) $level,
+            'message' => (string) $message,
+            'context' => $context,
+        ];
     }
 }
 
@@ -142,7 +199,9 @@ CREATE TABLE email_verification_tokens (
 SQL);
 
 $cookieName = 'auth_service_session';
+$logger = new CapturingLogger();
 $container = new Container([
+    LoggerInterface::class => $logger,
     'settings' => [
         'logger' => [
             'level' => Logger::DEBUG,
@@ -229,6 +288,7 @@ $login = $service->login('mixedcase@example.test', 'CorrectHorseBatteryStaple!42
 if (($login['authenticated'] ?? null) !== true || ($login['email'] ?? null) !== 'mixedcase@example.test') {
     fail('Login did not return authenticated user data');
 }
+assertLog($logger, 'notice', 'auth.token_issued', ['user_id' => (int) $login['id'], 'email' => 'mixedcase@example.test']);
 
 $loginResponse = $login['response'] ?? null;
 if (!$loginResponse instanceof \Psr\Http\Message\ResponseInterface) {
@@ -259,6 +319,7 @@ $refreshed = $service->getSession(requestWithCookie($cookie), $responseFactory->
 if (($refreshed['authenticated'] ?? null) !== true || !$refreshed['response'] instanceof \Psr\Http\Message\ResponseInterface) {
     fail('Expired access token did not refresh from refresh token');
 }
+assertLogCount($logger, 'notice', 'auth.token_issued', 2);
 
 $logout = $service->logout(requestWithCookie($cookie), $responseFactory->createResponse());
 if (($logout['authenticated'] ?? true) !== false) {
@@ -285,6 +346,7 @@ $afterLogout = $service->getSession(requestWithCookie($cookie), $responseFactory
 if (($afterLogout['authenticated'] ?? true) !== false) {
     fail('Revoked refresh token still authenticated a session');
 }
+assertLog($logger, 'warning', 'auth.refresh_token_rejected', ['reason' => 'Refresh token is not active']);
 
 assertRuntimeException(
     fn () => (new AuthService($container, new FailingRevokeUserRepository($pdo)))

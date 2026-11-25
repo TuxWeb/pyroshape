@@ -4,10 +4,10 @@ Use this guide when Codex builds a new Pyroshape app or extends an existing one.
 
 ## Repository Boundaries
 
-- Start new apps from `/home/dino/projects/pyroshape-skeleton`.
-- Use `/home/dino/projects/pyroshape-demo` as the reference for completed CRUD features.
-- Do not add app domain code to pyroshape-core.
-- Change `/home/dino/projects/pyroshape-core` only for reusable backend primitives needed by multiple apps.
+- Start new apps from `apps/skeleton/`.
+- Use `apps/demo/` as the reference for completed CRUD features.
+- Keep app domain code in the app.
+- Change Core at the monorepo root for reusable backend primitives needed by multiple apps.
 
 ## Delivery Unit
 

@@ -1,11 +1,13 @@
 # Pyroshape Demo SPA Design
 
+> Historical record. See the [demo README](../../../README.md) for the current layout and setup.
+
 Date: 2026-05-02
 Status: Draft for review
 
 ## Purpose
 
-`pyroshape-demo` will be the first complete example of a Pyroshape-driven single page application. It should demonstrate how a real consuming app uses `dam2k/pyroshape-core` for backend primitives while keeping product-specific domain code and frontend code in the app repository.
+`pyroshape-demo` will be the first complete example of a Pyroshape-driven single page application. It should demonstrate how a real consuming app uses `tuxweb/pyroshape` for backend primitives while keeping product-specific domain code and frontend code in the app repository.
 
 The demo will use a small Projects + Tasks domain because it proves authenticated CRUD, protected navigation, list/detail views, forms, API error handling, loading states, empty states, and reusable frontend structure without becoming product-specific.
 
@@ -21,7 +23,7 @@ The existing `pyroshape-skeleton` remains the minimal starter. `pyroshape-demo` 
 
 The application will follow the current skeleton integration model:
 
-- PHP/Slim front controller in `public/index.php` boots an app class that extends `Dam2k\Pyroshape\Core\App`.
+- PHP/Slim front controller in `public/index.php` boots an app class that extends `TuxWeb\Pyroshape\Core\App`.
 - The PHP backend serves API routes under `/api/*` and health checks under `/health`.
 - The built SvelteKit SPA is emitted to `public/app`.
 - Pyroshape's SPA fallback serves `public/app/index.html` for browser routes that are not API or health routes.

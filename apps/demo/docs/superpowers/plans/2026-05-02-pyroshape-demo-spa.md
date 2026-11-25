@@ -1,5 +1,7 @@
 # Pyroshape Demo SPA Implementation Plan
 
+> Historical record. See the [demo README](../../../README.md) for the current layout and setup.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build `pyroshape-demo` as a full Pyroshape-consuming SPA demo with auth, protected navigation, and Projects + Tasks CRUD.
@@ -20,7 +22,7 @@
 ### `pyroshape-demo`
 
 - Copy baseline app files from `pyroshape-skeleton`: `composer.json`, `config/config.php`, `public/index.php`, `src/App.php`, `src/Exceptions/ConfigNotValidException.php`, `tests/*`, `frontend/*`.
-- Modify namespace/package names from `Dam2k\PyroshapeSkeleton` to `Dam2k\PyroshapeDemo`.
+- Modify namespace/package names from `TuxWeb\PyroshapeSkeleton` to `TuxWeb\PyroshapeDemo`.
 - Create `database/migrations/001_auth_schema.sql`: copied from core base auth schema.
 - Create `database/migrations/002_projects_tasks_schema.sql`: app domain tables.
 - Create `src/Controllers/ProjectController.php`: HTTP JSON handlers for project/task endpoints.
@@ -39,8 +41,8 @@
 ### Task 1: Add Core Route Extension Hook
 
 **Files:**
-- Modify: `/home/dino/projects/pyroshape-core/src/App.php`
-- Create: `/home/dino/projects/pyroshape-core/tests/app_routes_before_spa_fallback.php`
+- Modify: `src/App.php`
+- Create: `tests/app_routes_before_spa_fallback.php`
 
 - [ ] **Step 1: Write the failing route-extension test**
 
@@ -51,7 +53,7 @@ Create `tests/app_routes_before_spa_fallback.php` with this content:
 
 declare(strict_types=1);
 
-use Dam2k\Pyroshape\Core\App;
+use TuxWeb\Pyroshape\Core\App;
 use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -237,14 +239,14 @@ git commit -m "Add app route hook before SPA fallback"
 ### Task 2: Bootstrap `pyroshape-demo` From Skeleton
 
 **Files:**
-- Create/modify under `/home/dino/projects/pyroshape-demo`: app, config, public, tests, frontend baseline.
+- Create/modify under `apps/demo`: app, config, public, tests, frontend baseline.
 
 - [ ] **Step 1: Copy skeleton files into demo**
 
-Run from `/home/dino/projects/pyroshape-demo`:
+Run from `apps/demo`:
 
 ```bash
-rsync -a --exclude='.git' --exclude='public/app' --exclude='logs' --exclude='tmp' /home/dino/projects/pyroshape-skeleton/ /home/dino/projects/pyroshape-demo/
+rsync -a --exclude='.git' --exclude='public/app' --exclude='logs' --exclude='tmp' ../skeleton/ ./
 ```
 
 Expected: `composer.json`, `public/index.php`, `config/config.php`, `src/App.php`, `frontend/package.json`, and skeleton tests exist in `pyroshape-demo`.
@@ -255,11 +257,11 @@ Modify these exact values:
 
 ```json
 {
-  "name": "dam2k/pyroshape-demo",
+  "name": "tuxweb/pyroshape-demo",
   "description": "Pyroshape demo application",
   "autoload": {
     "psr-4": {
-      "Dam2k\\PyroshapeDemo\\": "src/"
+      "TuxWeb\\PyroshapeDemo\\": "src/"
     }
   }
 }
@@ -268,19 +270,19 @@ Modify these exact values:
 In PHP files, replace:
 
 ```php
-Dam2k\PyroshapeSkeleton
+TuxWeb\PyroshapeSkeleton
 ```
 
 with:
 
 ```php
-Dam2k\PyroshapeDemo
+TuxWeb\PyroshapeDemo
 ```
 
 In `public/index.php`, import:
 
 ```php
-use Dam2k\PyroshapeDemo\App;
+use TuxWeb\PyroshapeDemo\App;
 ```
 
 - [ ] **Step 3: Install Composer dependencies**
@@ -288,10 +290,10 @@ use Dam2k\PyroshapeDemo\App;
 Run:
 
 ```bash
-php /home/dino/temp/prove/php/composer.phar install
+composer install
 ```
 
-Expected: Composer installs `dam2k/pyroshape-core` from `../pyroshape-core` path repository and generates autoload files.
+Expected: Composer installs `tuxweb/pyroshape` from `../..` path repository and generates autoload files.
 
 - [ ] **Step 4: Install frontend dependencies if `node_modules` is absent**
 
@@ -305,10 +307,10 @@ Expected: package install completes and `package-lock.json` matches dependencies
 
 - [ ] **Step 5: Run baseline verification**
 
-Run from `/home/dino/projects/pyroshape-demo`:
+Run from `apps/demo`:
 
 ```bash
-php /home/dino/temp/prove/php/composer.phar validate
+composer validate
 cd frontend && npm run check && npm run build
 cd .. && php tests/spa_fallback.php && php tests/smoke.php
 ```
@@ -463,7 +465,7 @@ public function deleteTask(Request $request, Response $response, string $id): Re
 Read the authenticated user id from:
 
 ```php
-$request->getAttribute(\Dam2k\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken::UID_ATTRIBUTE)
+$request->getAttribute(\TuxWeb\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken::UID_ATTRIBUTE)
 ```
 
 Validation rules:
@@ -496,20 +498,20 @@ Modify `src/App.php`:
 
 declare(strict_types=1);
 
-namespace Dam2k\PyroshapeDemo;
+namespace TuxWeb\PyroshapeDemo;
 
-use Dam2k\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
-use Dam2k\Pyroshape\Core\Middlewares\Auth\RequireAuth;
-use Dam2k\PyroshapeDemo\Controllers\ProjectController;
-use Dam2k\PyroshapeDemo\Exceptions\ConfigNotValidException;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireAuth;
+use TuxWeb\PyroshapeDemo\Controllers\ProjectController;
+use TuxWeb\PyroshapeDemo\Exceptions\ConfigNotValidException;
 
-class App extends \Dam2k\Pyroshape\Core\App
+class App extends \TuxWeb\Pyroshape\Core\App
 {
     public function __construct(string $config)
     {
         try {
             parent::__construct($config);
-        } catch (\Dam2k\Pyroshape\Core\Exceptions\ConfigNotValidException $exception) {
+        } catch (\TuxWeb\Pyroshape\Core\Exceptions\ConfigNotValidException $exception) {
             throw new ConfigNotValidException($exception->getMessage(), (int) $exception->getCode(), $exception);
         }
     }
@@ -838,11 +840,11 @@ Document:
 ```md
 # Pyroshape Demo
 
-This app demonstrates a Pyroshape-driven single page application using `dam2k/pyroshape-core`.
+This app demonstrates a Pyroshape-driven single page application using `tuxweb/pyroshape`.
 
 ## Run
 
-php /home/dino/temp/prove/php/composer.phar install
+composer install
 cd frontend
 npm install
 npm run build
@@ -861,16 +863,16 @@ cd frontend && npm run check && npm run build
 
 - [ ] **Step 2: Run full verification**
 
-Run from `/home/dino/projects/pyroshape-core`:
+Run from the monorepo root:
 
 ```bash
 php tests/app_routes_before_spa_fallback.php
 ```
 
-Run from `/home/dino/projects/pyroshape-demo`:
+Run from `apps/demo`:
 
 ```bash
-php /home/dino/temp/prove/php/composer.phar validate
+composer validate
 php tests/core_package.php
 php tests/auth_flow.php
 php tests/auth_service.php

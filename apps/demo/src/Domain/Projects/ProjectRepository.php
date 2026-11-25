@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\PyroshapeDemo\Domain\Projects;
+namespace TuxWeb\PyroshapeDemo\Domain\Projects;
 
 use PDO;
 use Throwable;

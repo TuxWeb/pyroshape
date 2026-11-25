@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\Pyroshape\Core\Auth\UserRepository;
+use TuxWeb\Pyroshape\Core\Auth\UserRepository;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 

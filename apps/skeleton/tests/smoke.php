@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeSkeleton\App;
-use Dam2k\PyroshapeSkeleton\Exceptions\ConfigNotValidException;
+use TuxWeb\PyroshapeSkeleton\App;
+use TuxWeb\PyroshapeSkeleton\Exceptions\ConfigNotValidException;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
 require __DIR__ . '/../vendor/autoload.php';

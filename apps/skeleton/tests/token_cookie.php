@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Dam2k\Pyroshape\Core\Auth\Tokens\AccessToken;
-use Dam2k\Pyroshape\Core\Auth\Tokens\TokenHandler;
-use Dam2k\Pyroshape\Core\Http\EncryptedCookies;
+use TuxWeb\Pyroshape\Core\Auth\Tokens\AccessToken;
+use TuxWeb\Pyroshape\Core\Auth\Tokens\TokenHandler;
+use TuxWeb\Pyroshape\Core\Http\EncryptedCookies;
 use DI\Container;
 use Firebase\JWT\JWT;
 use Slim\Psr7\Factory\ResponseFactory;

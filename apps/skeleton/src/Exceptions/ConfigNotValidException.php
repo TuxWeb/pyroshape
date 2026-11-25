@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\PyroshapeSkeleton\Exceptions;
+namespace TuxWeb\PyroshapeSkeleton\Exceptions;
 
 class ConfigNotValidException extends \Exception
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Auth\Tokens;
+namespace TuxWeb\Pyroshape\Core\Auth\Tokens;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;

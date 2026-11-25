@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 require __DIR__ . '/../vendor/autoload.php';
 
-if (!class_exists(\Dam2k\Pyroshape\Core\App::class)) {
+if (!class_exists(\TuxWeb\Pyroshape\Core\App::class)) {
     fwrite(STDERR, "Core App class not autoloadable\n");
     exit(1);
 }
 
-$coreAppFile = (new ReflectionClass(\Dam2k\Pyroshape\Core\App::class))->getFileName();
-$expectedPrefix = realpath(__DIR__ . '/../../../../pyroshape-core');
+$coreAppFile = (new ReflectionClass(\TuxWeb\Pyroshape\Core\App::class))->getFileName();
+$expectedFile = realpath(dirname(__DIR__, 3) . '/src/App.php');
 
-if ($expectedPrefix === false || !str_starts_with((string) $coreAppFile, $expectedPrefix . DIRECTORY_SEPARATOR)) {
-    fwrite(STDERR, "Core package not loaded from /home/dino/projects/pyroshape-core\n");
+if ($expectedFile === false || $coreAppFile !== $expectedFile) {
+    fwrite(STDERR, "Core package not loaded from the monorepo root\n");
     exit(1);
 }
 

@@ -1,11 +1,11 @@
 # Pyroshape Skeleton
 
-Small Slim/PHP-DI skeleton app using the reusable `dam2k/pyroshape-core` toolkit.
+Starter Slim/PHP-DI application in the Pyroshape monorepo.
 
 ## Layout
 
 - `public/index.php` - PHP entrypoint.
-- `src/App.php` - app wrapper over `Dam2k\Pyroshape\Core\App`.
+- `src/App.php` - app wrapper over `TuxWeb\Pyroshape\Core\App`.
 - `config/config.php` - app settings.
 - `frontend/` - SvelteKit SPA with shadcn-svelte component source.
 - `tests/` - smoke and auth checks.
@@ -15,20 +15,38 @@ Small Slim/PHP-DI skeleton app using the reusable `dam2k/pyroshape-core` toolkit
 ## Install
 
 ```bash
-php /home/dino/temp/prove/php/composer.phar install
+composer install
 ```
 
-Composer installs `dam2k/pyroshape-core` through the GitHub VCS repository configured in `composer.json`. Access to that repository is required. A sibling checkout of `pyroshape-core` is optional for developing the reusable toolkit locally.
+Run this command from `apps/skeleton/`. Composer installs `tuxweb/pyroshape` from the monorepo root through the path repository in `composer.json`. The app loads Core through its own `vendor/autoload.php`.
 
 ## Runtime
 
-Configure the app in `config/config.php`, then serve `public/index.php` through PHP-FPM/Apache/Nginx or local PHP server:
+From `apps/skeleton/`, start the PHP development server and open `http://127.0.0.1:8080`.
 
 ```bash
 php -S 127.0.0.1:8080 -t public
 ```
 
-The PHP backend serves API routes and the built static SPA from `public/app`.
+`GET /health` works before database and auth setup. The app defaults to production settings, with Secure cookies and user-facing verification tokens disabled. Build the frontend to serve the SPA from `public/app`.
+
+### Local authentication
+
+Apply `database/migrations/001_auth_schema.sql` to an empty development MySQL database. Use PHP with `pdo_mysql` and export the connection settings and four independent auth secrets before starting the server.
+
+```bash
+export PYROSHAPE_ENVIRONMENT=development
+export PYROSHAPE_DB_DSN='mysql:host=127.0.0.1;dbname=pyroshape_skeleton;charset=utf8mb4'
+export PYROSHAPE_DB_USER='pyroshape_skeleton'
+read -rs PYROSHAPE_DB_PASSWORD
+export PYROSHAPE_DB_PASSWORD
+export PYROSHAPE_JWT_REFRESH_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+export PYROSHAPE_JWT_ACCESS_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+export PYROSHAPE_COOKIE_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+export PYROSHAPE_COOKIE_SALT="$(php -r 'echo bin2hex(random_bytes(32));')"
+```
+
+Explicit `development` mode permits HTTP login cookies and includes the email verification token in the registration response. For deployments, set `PYROSHAPE_ENVIRONMENT=production`, use HTTPS, and provide stable credentials and keys through the process environment.
 
 ## Frontend
 
@@ -66,17 +84,9 @@ php tests/smoke.php
 php tests/access_logger.php
 php tests/frontend_starter.php
 php tests/skeleton_identity.php
-php /home/dino/temp/prove/php/composer.phar validate
+composer validate
 ```
 
-## Core Toolkit
+## Using the starter for a separate app
 
-Reusable backend code lives in the separate `pyroshape-core` repository and is installed by Composer. The local reference checkout is `/home/dino/projects/pyroshape-core`.
-
-Package name:
-
-```text
-dam2k/pyroshape-core
-```
-
-Use this app as starter shell. Put reusable Slim/PHP-DI/auth/logging/database behavior in `pyroshape-core`; keep project-specific code in this app under `src/`.
+Copy the starter and rename its Composer package, app namespace, and frontend package. Replace the `path` repository in the app's `composer.json` with a `vcs` repository at `git@github.com:TuxWeb/pyroshape.git`, and require the Core release you want to install. Run `composer update tuxweb/pyroshape` from the new app to replace the starter lockfile’s local Core reference. See [the Pyroshape repository README](../../README.md) for Composer setup.

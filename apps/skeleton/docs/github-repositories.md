@@ -1,32 +1,12 @@
-# Pyroshape GitHub Repository Prep
+# Pyroshape Repository
 
-Pyroshape should be published as three separate repositories.
+The `TuxWeb/pyroshape` repository contains the reusable Composer package at the root, the starter in `apps/skeleton/`, and the reference app in `apps/demo/`. Its SSH remote is `git@github.com:TuxWeb/pyroshape.git`.
 
-## Repositories
+The starter installs `tuxweb/pyroshape` from the repository root through its Composer path repository. For a starter copied into its own repository, configure Composer with the [GitHub VCS installation instructions](../../../README.md).
 
-- `pyroshape-core`: reusable backend toolkit package.
-- `pyroshape-skeleton`: clean starter app for new projects.
-- `pyroshape-demo`: reference implementation showing a completed SPA vertical slice.
+## Before publishing
 
-## Publish Order
-
-1. Publish `pyroshape-core`.
-2. Publish `pyroshape-skeleton`.
-3. Publish `pyroshape-demo`.
-
-This starter consumes `dam2k/pyroshape-core` through the GitHub VCS repository configured in `composer.json`. A Composer path repository is an optional local override for developing core, rather than a requirement for using the starter.
-
-## Before Push
-
-For each repo:
-
-- Make sure generated directories are ignored: `vendor/`, `frontend/node_modules/`, `frontend/.svelte-kit/`, `public/app/`, `logs/`, and `tmp/`.
-- Do not commit local DB credentials or real JWT/cookie secrets.
-- Run the repo verification commands from `README.md`.
-- Inspect `git status --short` and the staged diff before committing.
-- Include `frontend/components.json`, shadcn component sources, and the npm lockfile when changing the frontend component system.
-- Keep README, delivery/style guides, `AGENTS.md`, and `SKILL.md` aligned with architectural changes.
-
-## This Repository
-
-`pyroshape-skeleton` is an initialized Git repository. Its configured origin is `git@github.com:dam2k/pyroshape-skeleton.git` and its main branch is `main`. Use the existing repository and remote; do not reinitialize Git. Verify sibling repository remotes independently before publishing changes there.
+- Run the verification commands in [the starter README](../README.md).
+- Include frontend source, component configuration, and lockfiles for the changes under review.
+- Keep `vendor/`, `frontend/node_modules/`, `frontend/.svelte-kit/`, `public/app/`, logs, and temporary output out of Git.
+- Provide local credentials and auth secrets through the process environment.

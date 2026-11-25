@@ -1,5 +1,5 @@
 {
-    "name": "dam2k/pyroshape-demo",
+    "name": "tuxweb/pyroshape-demo",
     "description": "Pyroshape demo application",
     "version": "0.0.1",
     "license": "proprietary",
@@ -10,20 +10,24 @@
         }
     ],
     "require": {
-        "dam2k/pyroshape-core": "^0.1"
+        "tuxweb/pyroshape": "^0.1"
     },
     "repositories": [
         {
             "type": "path",
-            "url": "../pyroshape-core",
+            "url": "../..",
             "options": {
-                "symlink": true
+                "symlink": true,
+                "reference": "config",
+                "versions": {
+                    "tuxweb/pyroshape": "0.1.0"
+                }
             }
         }
     ],
     "autoload": {
         "psr-4": {
-            "Dam2k\\PyroshapeDemo\\": "src/"
+            "TuxWeb\\PyroshapeDemo\\": "src/"
         }
     }
 }

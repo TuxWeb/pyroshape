@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Controllers;
+namespace TuxWeb\Pyroshape\Core\Controllers;
 
-use Dam2k\Pyroshape\Core\Auth\AuthService;
-use Dam2k\Pyroshape\Core\Auth\AuthException;
+use TuxWeb\Pyroshape\Core\Auth\AuthService;
+use TuxWeb\Pyroshape\Core\Auth\AuthException;
 use InvalidArgumentException;
 use PDOException;
 use Psr\Http\Message\ResponseInterface as Response;

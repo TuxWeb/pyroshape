@@ -1,10 +1,14 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { session, logout } from '$lib/session';
+  import Alert from '$lib/components/ui/Alert.svelte';
   import Button from '$lib/components/ui/Button.svelte';
 
   let logoutError = '';
   let loggingOut = false;
+  let mobileNavOpen = false;
+
+  const navItems = [{ href: '/projects', label: 'Projects' }];
 
   async function signOut() {
     logoutError = '';
@@ -12,6 +16,7 @@
 
     try {
       await logout();
+      mobileNavOpen = false;
       await goto('/login');
     } catch {
       logoutError = 'Logout failed. Please try again.';
@@ -22,33 +27,70 @@
 </script>
 
 <div class="min-h-screen bg-background text-foreground">
-  <header class="border-b border-border bg-white">
-    <div class="mx-auto flex min-h-14 w-full max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-      <a href="/" class="text-base font-semibold text-foreground">Pyroshape Demo</a>
+  <header class="sticky top-0 z-40 border-b border-border bg-white/95 shadow-sm backdrop-blur">
+    <nav class="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <a href="/" class="flex min-w-0 items-center gap-3">
+        <span class="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-sm">P</span>
+        <span class="grid min-w-0">
+          <span class="truncate text-sm font-semibold sm:text-base">Pyroshape Demo</span>
+          <span class="hidden truncate text-xs text-muted-foreground sm:block">Slim API + SvelteKit SPA</span>
+        </span>
+      </a>
 
-      <nav class="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
-        <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/dashboard">Dashboard</a>
-        <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/projects">Projects</a>
+      {#if $session.authenticated}
+        <div class="hidden items-center gap-1 md:flex">
+          {#each navItems as item}
+            <a class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-primary-50 hover:text-primary" href={item.href}>
+              {item.label}
+            </a>
+          {/each}
+        </div>
+      {/if}
 
+      <div class="flex items-center gap-2">
         {#if $session.authenticated}
-          <Button variant="ghost" type="button" class="ml-0 min-w-20 sm:ml-2" disabled={loggingOut} on:click={signOut}>
+          <span class="hidden max-w-[14rem] truncate text-sm text-muted-foreground lg:block">{$session.email}</span>
+          <Button variant="light" type="button" class="hidden h-9 px-3 sm:inline-flex" disabled={loggingOut} on:click={signOut}>
             {loggingOut ? 'Logging out...' : 'Logout'}
           </Button>
+          <button
+            class="rounded-lg border border-border bg-white p-2 text-muted-foreground shadow-sm hover:bg-primary-50 hover:text-primary md:hidden"
+            type="button"
+            aria-label="Toggle navigation"
+            on:click={() => (mobileNavOpen = !mobileNavOpen)}
+          >
+            =
+          </button>
         {:else}
-          <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/login">Login</a>
-          <a class="rounded-md px-3 py-2 hover:bg-muted hover:text-foreground" href="/register">Register</a>
+          <a class="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-primary-50 hover:text-primary" href="/login">Login</a>
+          <a class="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm hover:bg-primary-800" href="/register">Register</a>
         {/if}
-      </nav>
-    </div>
-  </header>
+      </div>
+    </nav>
 
-  <main class="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8">
-    {#if logoutError}
-      <div class="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-        {logoutError}
+    {#if $session.authenticated && mobileNavOpen}
+      <div class="border-t border-border bg-white px-4 py-3 md:hidden">
+        <div class="mx-auto grid max-w-7xl gap-1 text-sm font-medium text-muted-foreground">
+          {#each navItems as item}
+            <a class="rounded-lg px-3 py-2 hover:bg-primary-50 hover:text-primary" href={item.href} on:click={() => (mobileNavOpen = false)}>
+              {item.label}
+            </a>
+          {/each}
+          <button
+            class="rounded-lg px-3 py-2 text-left text-destructive hover:bg-destructive/10"
+            type="button"
+            disabled={loggingOut}
+            on:click={signOut}
+          >
+            {loggingOut ? 'Logging out...' : 'Logout'}
+          </button>
+        </div>
       </div>
     {/if}
+  </header>
 
+  <main class="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+    <Alert variant="danger" message={logoutError} class="mb-4" />
     <slot />
   </main>
 </div>

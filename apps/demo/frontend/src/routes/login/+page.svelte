@@ -23,7 +23,7 @@
         body: JSON.stringify({ email, password })
       });
       await loadSession();
-      await goto('/dashboard');
+      await goto('/projects');
     } catch (caught) {
       error = caught instanceof ApiError ? caught.message : 'Login failed';
     } finally {

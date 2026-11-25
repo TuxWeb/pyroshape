@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Auth;
+namespace TuxWeb\Pyroshape\Core\Auth;
 
 use RuntimeException;
 

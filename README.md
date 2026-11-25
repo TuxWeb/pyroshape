@@ -1,181 +1,49 @@
-# dam2k/pyroshape-core
+# Pyroshape
 
-Reusable backend toolkit for Pyroshape-style PHP apps.
+Pyroshape is TuxWeb's PHP framework. The Composer library, starter, and reference app are developed in this repository.
 
-It provides the lower-level Slim/PHP-DI foundation used by the starter app:
+| Directory | Purpose |
+| --- | --- |
+| `src/` | The `tuxweb/pyroshape` library with Slim/PHP-DI bootstrapping, authentication, middleware, JSON error handling, logging, and PDO integration |
+| `apps/skeleton/` | [Starter app](apps/skeleton/README.md) for a new Pyroshape project |
+| `apps/demo/` | [Reference app](apps/demo/README.md) with authentication and a Projects and Tasks API |
+| `skills/pyroshape-app/` | [Project skill](skills/pyroshape-app/SKILL.md) for working on Pyroshape and its apps |
 
-- Slim app bootstrap
-- PHP-DI container wiring
-- split application logger and HTTP access logger
-- JSON error handling
-- default middleware
-- PDO factory
-- JWT auth service, encrypted auth cookies, and auth middleware
-- basic auth controller and health controller
-- base auth SQL migration
+## Develop Pyroshape
 
-## Local Development
+Core requires PHP 8.5 or later and Composer. Both app frontends were verified on Node.js 24. The starter lists its supported Node.js versions in its frontend manifest. Run the Core tests with the dependencies installed at the repository root.
 
-Expected sibling layout:
+~~~sh
+composer install
+for test_file in tests/*.php; do
+    php "$test_file" || exit $?
+done
+~~~
 
-```text
-/home/dino/projects/pyroshape
-/home/dino/projects/pyroshape-core
-```
+The authentication tests use SQLite and require `pdo_sqlite`. The PostgreSQL repository test requires `pdo_pgsql` and an isolated test database configured with `PYROSHAPE_TEST_POSTGRES_DSN`. Set `PYROSHAPE_TEST_POSTGRES_USER` and `PYROSHAPE_TEST_POSTGRES_PASSWORD` as needed.
 
-In a consuming app `composer.json`, add:
+Each app has its own Composer and npm dependencies. Install dependencies inside the app you want to run and follow its README for configuration and database setup. The two apps resolve the Core package from the root of this checkout through their Composer `path` repositories.
 
-```json
+## Use the library in another app
+
+Projects with access to the GitHub repository can resolve the development branch through Composer. In the consuming app's `composer.json`, define the VCS repository and require the package.
+
+~~~json
 {
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../pyroshape-core",
-      "options": {
-        "symlink": true
-      }
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@github.com:TuxWeb/pyroshape.git"
+        }
+    ],
+    "require": {
+        "tuxweb/pyroshape": "dev-main"
     }
-  ],
-  "require": {
-    "dam2k/pyroshape-core": "^0.7"
-  }
 }
-```
+~~~
 
-Then install:
+Run `composer update tuxweb/pyroshape` to resolve the dependency. Commit the app's lockfile to pin the commit it uses. When using the starter as a separate project, apply this VCS configuration in place of the in-repository `path` entry and resolve a new app lockfile. Use the starter's `src/App.php`, `public/index.php`, and configuration as working integration examples.
 
-```bash
-php /home/dino/temp/prove/php/composer.phar install
-```
+## Application boundaries
 
-Composer symlinks the package into `vendor/dam2k/pyroshape-core`, so edits in `pyroshape-core` apply immediately to the app.
-
-## Minimal App Wrapper
-
-A new app can expose its own namespace while extending the core app:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-namespace Acme\MyApp;
-
-class App extends \Dam2k\Pyroshape\Core\App
-{
-}
-```
-
-Front controller:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-require __DIR__ . '/../vendor/autoload.php';
-
-(new \Acme\MyApp\App(__DIR__ . '/../config/config.php'))->run();
-```
-
-## Required App Config
-
-Create `config/config.php` returning the settings consumed by the core services. At minimum:
-
-```php
-<?php
-
-declare(strict_types=1);
-
-return [
-    'displayErrorDetails' => false,
-    'frontend' => [
-        'appPath' => __DIR__ . '/../public/app',
-    ],
-    'logger' => [
-        'app' => [
-            'name' => 'app',
-            'path' => __DIR__ . '/../logs/app.log',
-            'level' => 'debug',
-        ],
-        'access' => [
-            'name' => 'access',
-            'path' => __DIR__ . '/../logs/access.log',
-            'level' => 'info',
-        ],
-    ],
-    'database' => [
-        'dsn' => 'mysql:host=127.0.0.1;dbname=pyroshape;charset=utf8mb4',
-        'username' => 'pyroshape',
-        'password' => 'secret',
-    ],
-    'auth' => [
-        'issuer' => 'pyroshape',
-        'audience' => 'pyroshape',
-        'accessTokenTtl' => 900,
-        'refreshTokenTtl' => 2592000,
-        'jwtSecret' => 'change-me',
-        'cookieSecret' => 'change-me-32-bytes-minimum',
-        'cookieName' => 'pyroshape_auth',
-    ],
-];
-```
-
-## Database
-
-Copy or run the bundled migration:
-
-```text
-database/migrations/001_auth_schema.sql
-```
-
-For a new app, keep app-specific migrations in the app repository. Treat core migrations as base schema examples or vendor migrations copied into the app migration flow.
-
-## Bundle / Release
-
-For local path use, no bundle step is needed. Composer reads this directory directly.
-
-For reusable release:
-
-1. Commit this repository separately.
-2. Tag a version, for example `0.1.0`.
-3. In app `composer.json`, replace path repository with a VCS repository or private Packagist package.
-
-Example VCS repository:
-
-```json
-{
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "git@github.com:dam2k/pyroshape-core.git"
-    }
-  ],
-  "require": {
-    "dam2k/pyroshape-core": "^0.7"
-  }
-}
-```
-
-Then update:
-
-```bash
-php /home/dino/temp/prove/php/composer.phar update dam2k/pyroshape-core
-```
-
-## Boundary
-
-Keep this package framework-level:
-
-- reusable middleware
-- reusable auth primitives
-- reusable logging/database/container setup
-- shared controllers only when generic
-
-Keep product code in each consuming app:
-
-- domain models
-- app routes
-- app controllers
-- app migrations
-- app frontend
+Keep reusable framework behavior in Core. Register an application's routes through `setupAppRoutes()` and keep domain logic, frontend source, and app-specific migrations in that app. The bundled `database/migrations/001_auth_schema.sql` provides the base MySQL authentication schema.

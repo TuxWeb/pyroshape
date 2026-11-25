@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Dam2k\Pyroshape\Core\Crypto;
+namespace TuxWeb\Pyroshape\Core\Crypto;
 
 use InvalidArgumentException;
 use RuntimeException;

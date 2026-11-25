@@ -59,7 +59,7 @@ assertContains($passwordPage, 'ensureSessionLoaded', 'password page requires aut
 
 $delivery = readProjectFile($root, 'docs/ai-delivery.md');
 assertContains($delivery, 'vertical slice', 'AI delivery guide documents vertical slice workflow');
-assertContains($delivery, 'Do not add app domain code to pyroshape-core', 'AI delivery guide protects core boundary');
+assertContains($delivery, 'Keep app domain code in the app', 'AI delivery guide protects core boundary');
 
 $styleGuide = readProjectFile($root, 'docs/frontend-style-guide.md');
 assertContains($styleGuide, 'Target app', 'frontend style guide documents target app adaptation');

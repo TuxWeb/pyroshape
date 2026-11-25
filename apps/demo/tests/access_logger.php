@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Dam2k\PyroshapeDemo\App;
+use TuxWeb\PyroshapeDemo\App;
 use Monolog\Logger;
 use Slim\Psr7\Factory\ServerRequestFactory;
 
