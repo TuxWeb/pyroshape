@@ -1,0 +1,26 @@
+{
+    "name": "dam2k/pyroshape-skeleton",
+    "description": "Pyroshape skeleton application, used to startup a pyroshape-core driven backend of reusable components.",
+    "version": "0.1.0",
+    "license": "proprietary",
+    "authors": [
+        {
+            "name": "Dino Ciuffetti",
+            "email": "dam2000@gmail.com"
+        }
+    ],
+    "require": {
+        "dam2k/pyroshape-core": "^0.7"
+    },
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "git@github.com:dam2k/pyroshape-core.git"
+      }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dam2k\\PyroshapeSkeleton\\": "src/"
+        }
+    }
+}
