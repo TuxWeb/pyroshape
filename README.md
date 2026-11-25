@@ -1,6 +1,8 @@
 # Pyroshape
 
-Pyroshape is TuxWeb's PHP framework for building web apps with Slim and PHP-DI. The core library handles authentication and sessions, JSON errors, logging, and database access through PDO.
+Build a single-page application with your choice of frontend and a straightforward PHP backend. Pyroshape is TuxWeb's open-source Composer package for PHP 8.5+, built on Slim and PHP-DI and released under the MIT license. The same PHP app can serve your compiled frontend and its JSON API, so the browser can use cookie-based sessions on a single origin.
+
+Pyroshape provides authentication, session handling, logging, JSON errors, and database access through PDO. Extend the app class to add your own routes, middleware, and business logic. Start with the bundled SvelteKit app or connect an existing frontend to the API.
 
 ## Start a new app
 
