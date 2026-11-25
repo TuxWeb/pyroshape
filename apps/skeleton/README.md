@@ -89,4 +89,4 @@ composer validate
 
 ## Using the starter for a separate app
 
-Copy the starter and rename its Composer package, app namespace, and frontend package. Replace the `path` repository in the app's `composer.json` with a `vcs` repository at `https://github.com/TuxWeb/pyroshape.git`, and require the Core release you want to install. Run `composer update tuxweb-it/pyroshape` from the new app to replace the starter lockfile’s local Core reference. See [the Pyroshape repository README](../../README.md) for Composer setup.
+Copy the starter and rename its Composer package, app namespace, and frontend package. Remove the Pyroshape `path` repository entry in the app's `composer.json`, then run `composer update tuxweb-it/pyroshape` from the new app to resolve Core from Packagist and update the starter lockfile. See [the Pyroshape repository README](../../README.md) for Composer setup.

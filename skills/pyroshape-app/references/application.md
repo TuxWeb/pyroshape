@@ -2,7 +2,7 @@
 
 ## Start from the skeleton
 
-Use `apps/skeleton/` for a new app. Rename the Composer and frontend package identities, PHP namespaces, and starter identity assertions. The in-repository starter uses a Composer `path` repository pointing to the root via `../..`. For an independent copy, use the VCS dependency setup in the project README and resolve a new lockfile. Keep the configured dependency source when working on an existing app. Install dependencies with `composer install`.
+Use `apps/skeleton/` for a new app. Rename the Composer and frontend package identities, PHP namespaces, and starter identity assertions. The in-repository starter uses a Composer `path` repository pointing to the root via `../..`. For an independent copy, remove the Core path entry and run `composer update tuxweb-it/pyroshape` to resolve Core from Packagist and update the lockfile. Keep the configured dependency source when working on an existing app. Install dependencies with `composer install`.
 
 Follow the app README for runtime settings used by `config/config.php` and apply the app's auth schema and migrations to a test database. Install and build the frontend using the starter's lockfile and supported Node version. Run its smoke and auth checks before introducing domain code. In the current starter, `npm --prefix frontend ci`, `npm --prefix frontend run check`, and `npm --prefix frontend run build` produce the static SPA at `public/app`. The `spa_fallback.php` test needs that build. For local smoke tests, follow the app's server setup, such as `php -S 127.0.0.1:8080 -t public` in the starter.
 

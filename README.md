@@ -21,16 +21,17 @@ Open [localhost:8080](http://127.0.0.1:8080). The [starter guide](apps/skeleton/
 
 ## Add Pyroshape to an app
 
-Run these commands from your app directory.
+Install [`tuxweb-it/pyroshape` from Packagist](https://packagist.org/packages/tuxweb-it/pyroshape) by running this command from your app directory.
 
 ~~~sh
-composer config repositories.pyroshape vcs https://github.com/TuxWeb/pyroshape.git
 composer require 'tuxweb-it/pyroshape:^0.9.1'
 ~~~
 
 Commit your app's Composer lockfile to pin the framework revision. The [starter's app class](apps/skeleton/src/App.php) shows how an app extends the framework.
 
 If your app already requires `tuxweb/pyroshape` from the 0.9.0 release, remove that requirement with `composer remove tuxweb/pyroshape --no-update` before running `composer require` above. The PHP namespace remains `TuxWeb\Pyroshape\Core`.
+
+If you previously added the `repositories.pyroshape` GitHub entry, run `composer config --unset repositories.pyroshape` to let Composer resolve the package through Packagist.
 
 ## Test the core library
 
@@ -44,6 +45,10 @@ done
 ~~~
 
 The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSHAPE_TEST_POSTGRES_DSN` points to an isolated test database and `pdo_pgsql` is enabled.
+
+## Releases
+
+Push development and documentation changes to `main` as usual. Create a version tag and a GitHub release when a set of changes is ready for a stable release on Packagist.
 
 ## License
 
