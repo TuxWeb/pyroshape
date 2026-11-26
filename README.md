@@ -1,8 +1,18 @@
 # Pyroshape
 
-Build a single-page application with your choice of frontend and a straightforward PHP backend. Pyroshape is TuxWeb's open-source Composer package for PHP 8.5+, built on Slim and PHP-DI and released under the MIT license. The same PHP app can serve your compiled frontend and its JSON API, so the browser can use cookie-based sessions on a single origin.
+Build a single-page application with your choice of frontend and a straightforward PHP backend. Pyroshape is an open-source Composer package for PHP 8.5+, built on Slim and PHP-DI and released under the MIT license. The same PHP app can serve your compiled frontend and its JSON API, so the browser can use cookie-based sessions on a single origin.
 
 Pyroshape provides authentication, session handling, logging, JSON errors, and database access through PDO. Extend the app class to add your own routes, middleware, and business logic. Start with the bundled SvelteKit app or connect an existing frontend to the API.
+
+Built by TuxWeb. The team estimates that it developed and tested 95% of Pyroshape by hand. [Visit TuxWeb](https://www.tuxweb.it/) · [Support the maintainer in Monero](DONATE.md)
+
+## What you can build quickly
+
+- **An internal tool** for tracking requests, assets, or inventory. Use the starter's sign-in flow and add a list, an edit form, and a PHP API for your records.
+- **A customer portal** for projects, tasks, or service requests. Follow the demo's pattern for showing signed-in users their own records.
+- **A dashboard for an existing system.** Keep your frontend and add PHP endpoints that read from your database or call the services you already use.
+
+The [starter](apps/skeleton/README.md) gives you registration, email verification, and login. The [Projects and Tasks demo](apps/demo/README.md) shows a complete database-backed feature you can use as a reference when you build your first one.
 
 ## Start a new app
 
