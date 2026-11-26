@@ -14,6 +14,10 @@ Built by TuxWeb. The team estimates that it developed and tested 95% of Pyroshap
 
 The [starter](apps/skeleton/README.md) gives you registration, email verification, and login. The [Projects and Tasks demo](apps/demo/README.md) shows a complete database-backed feature you can use as a reference when you build your first one.
 
+## Share your feedback
+
+We'd love to hear what you're building with Pyroshape, what made your work easier, and where you got stuck. Positive and critical feedback are both welcome, whether you've shipped an app or only tried the starter. Tell us what worked, what felt unclear or missing, and what would make Pyroshape more useful to you. [Share your experience on GitHub](https://github.com/TuxWeb/pyroshape/issues/new).
+
 ## Start a new app
 
 Use PHP 8.5+, Composer, and Node.js 24+. The starter includes a Svelte 5, SvelteKit 3, and TypeScript frontend with shadcn-svelte components. PostgreSQL is recommended for new apps, and MariaDB is also supported.
