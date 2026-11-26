@@ -16,7 +16,9 @@ The [starter](apps/skeleton/README.md) gives you registration, email verificatio
 
 ## Share your feedback
 
-We'd love to hear what you're building with Pyroshape, what made your work easier, and where you got stuck. Positive and critical feedback are both welcome, whether you've shipped an app or only tried the starter. Tell us what worked, what felt unclear or missing, and what would make Pyroshape more useful to you. [Share your experience on GitHub](https://github.com/TuxWeb/pyroshape/issues/new).
+We'd love to hear what you're building with Pyroshape, what made your work easier, and where you got stuck. Positive and critical feedback are both welcome, whether you've shipped an app or only tried the starter. Tell us what worked, what felt unclear or missing, and what would make Pyroshape more useful to you.
+
+You can [share your experience on GitHub](https://github.com/TuxWeb/pyroshape/issues/new) or write directly to Pyroshape's author, [Dino Ciuffetti (dino@tuxweb.it)](mailto:dino@tuxweb.it). We'd be happy to hear from you by email, too.
 
 ## Start a new app
 
