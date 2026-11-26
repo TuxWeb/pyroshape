@@ -148,6 +148,12 @@ Auth endpoints provided by core:
 
 See the starter README for the `PYROSHAPE_*` environment variables and the PostgreSQL and MariaDB/MySQL schemas. During local auth testing, use separate development keys and explicitly enable development mode for the verification token. If login returns HTTP 500, check the connection settings, migrations, and key lengths. If logout works via HTTP but fails in the browser, inspect the Svelte button event forwarding.
 
+### Stateless sessions and forced logout
+
+Keep ordinary requests stateless. The encrypted login cookie carries a short-lived access JWT and a longer-lived refresh JWT. Core verifies the access JWT for ordinary requests and checks the refresh token's persisted record and current account state when renewing access. Logout clears the browser cookie and revokes its valid refresh token. An issued access JWT remains usable on ordinary routes until its effective expiry.
+
+Design forced logout around that access-token window. For routes that must stop immediately after revocation, check current session or account revocation state, permissions, and resource ownership on the server before acting. Treat the access JWT as identity input only on these routes and require recent reauthentication where warranted. Test that sensitive routes reject a revoked session even while its access JWT is still valid. [Core session contract](https://github.com/TuxWeb/pyroshape/blob/main/skills/pyroshape-app/references/core-contracts.md#stateless-sessions-and-forced-logout)
+
 ## When to Change Core
 
 Keep reusable JSON helpers, generic validation, auth and session middleware, logging, database and container behavior, and the shared SPA fallback in Core. Keep app domain tables, migrations, repositories, controllers, frontend components, and local settings in the app.

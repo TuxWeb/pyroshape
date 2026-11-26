@@ -7,6 +7,7 @@
 - Composer installs Core through the path repository at `../..` in the monorepo and through Packagist in standalone copies. Load dependencies through the app’s `vendor/autoload.php`.
 - Frontend requires Node.js 24+ and uses SvelteKit 3, Svelte 5, TypeScript, Tailwind CSS 4, and shadcn-svelte. The official static adapter writes the SPA to `public/app`, served by PHP/Slim.
 - PostgreSQL is the default development database. MariaDB and MySQL use the existing `pdo_mysql` migration. Follow the [README](README.md#local-authentication) for DSNs and schema commands.
+- Keep ordinary sessions stateless. For forced logout and sensitive operations, follow the [session and authorization guidance](SKILL.md#stateless-sessions-and-forced-logout).
 
 ## UI Conventions
 

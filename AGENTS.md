@@ -8,6 +8,7 @@ Pyroshape is TuxWeb's open-source PHP framework. The repository root is the `tux
 - Review the relevant code, contracts, and documentation before making changes. **Identify the root cause before applying a fix** and use the evidence to explain the change.
 - Favor simple, modular, maintainable solutions. Respect existing boundaries and avoid premature abstractions, unnecessary dependencies, and unrelated refactoring.
 - Preserve the contracts that apps rely on, including public signatures, configuration keys, route and middleware order, and session behavior. If a requested change affects these contracts, document the impact and verify it in at least one representative app.
+- Keep sessions stateless for ordinary app requests. Enforce immediate forced logout and current authorization on sensitive operations at the application boundary. Follow the [session contract](skills/pyroshape-app/references/core-contracts.md#stateless-sessions-and-forced-logout).
 - Break complex implementation goals into verifiable milestones and complete one increment at a time. State material risks and assumptions and make routine decisions independently.
 - Report implementation, verification, repository publishing, and deployment as separate statuses.
 

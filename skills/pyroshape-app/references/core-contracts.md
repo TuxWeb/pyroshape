@@ -10,9 +10,16 @@ Confirm version-specific behavior in the installed package or the checkout being
 ## Authentication
 
 - Start with `src/Controllers/AuthController.php` for payloads and status codes, `src/Auth/AuthService.php` for session behavior, `src/Http/EncryptedCookies.php` for cookies, and `src/Auth/UserRepository.php` for persistence. Core provides `GET /api/session`, `GET /api/auth/verify-email`, and `POST` routes at `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, and `/api/auth/change-password`.
-- The current default accepts a valid access JWT without consulting the database on every request. Refresh tokens still have persisted hashes, are checked during refresh, and are subject to revocation. A revoked refresh token does not by itself invalidate an unexpired access JWT in stateless mode. Preserve the configured mode and propagate session `Set-Cookie` headers from middleware to the outgoing response.
 - If login or refresh fails, inspect the app and access logs, confirm the auth schema and PDO driver, then check the active `jwt_access_token`, `jwt_refresh_token`, and `login_cookie` settings against the installed Core. Use suitable local keys and check cookie flags, path, and origin when the browser fails to send the cookie. Keep secret values out of logs and examples.
 - Focus on the relevant regression script. Core has `tests/auth_stateless_session.php`, `tests/auth_password_change.php`, and `tests/auth_controller_logging.php`. The session and password scripts use SQLite fixtures and require `pdo_sqlite`.
+
+### Stateless sessions and forced logout
+
+- Keep the default stateless session mode for ordinary requests. Core stores two signed JWTs in the encrypted login cookie. The starter uses `HttpOnly`, `SameSite=Lax`, and `Secure` in production. Keep the JWTs in the cookie and propagate session `Set-Cookie` headers from middleware to the outgoing response.
+- The short-lived access JWT authenticates ordinary requests using its verified claims. Those claims reflect the account at issuance, so check current permissions separately wherever freshness matters. The longer-lived refresh JWT can renew access only after Core validates its hash and identifier against the active database record and checks the current account status.
+- Logout expires the browser cookie and revokes its valid refresh token. An already-issued access JWT remains acceptable on ordinary routes until its effective expiry, including any configured clock skew. Base the app's forced-logout policy on that window. Choose a short access-token lifetime and define which operations must stop immediately and whether revocation targets one session or the whole account.
+- Before a sensitive operation such as changing credentials or permissions, exporting private data, or deleting records, require a current server-side check of the applicable session or account revocation state, permissions, and ownership. Use the access JWT as identity input only for this decision. Require recent reauthentication where warranted and deny the operation if the required state is unavailable or revoked. Core's password change illustrates the pattern by checking the active refresh session and the current password.
+- Test the policy with a revoked session while its access JWT is still valid. Ordinary routes should follow the stateless policy, a revoked refresh token must fail renewal, and sensitive operations must reject the session immediately.
 
 ## PDO and migrations
 
