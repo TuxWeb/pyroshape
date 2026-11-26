@@ -2,7 +2,7 @@
 /.codex/
 /.superpowers/
 
-/vendor/
+vendor/
 /composer.lock
 /tmp/
 /logs/

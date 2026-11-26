@@ -97,6 +97,10 @@ done
 
 The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSHAPE_TEST_POSTGRES_DSN` points to an isolated test database and `pdo_pgsql` is enabled.
 
+## Maintain PHP file headers
+
+Stage new PHP files first, then run `php scripts/add-php-headers.php` from a Git checkout to add the project signature and MIT notice to tracked PHP files. The script excludes `vendor/` at every depth and keeps existing signatures. Use `php scripts/add-php-headers.php --check` to list files that still need a header.
+
 ## Releases
 
 Push development and documentation changes to `main` as usual. The package maintainer decides when to publish a stable release on Packagist and sets its version. Create the version tag and GitHub release only with the maintainer's explicit authorization.
