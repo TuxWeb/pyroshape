@@ -43,6 +43,7 @@ Pyroshape is TuxWeb's open-source PHP framework. The repository root is the `tux
 - Test relevant behavior and risks. Prefer **red–green testing** for regressions and changes involving finance, concurrency, security, or data integrity. Confirm that the test reproduces the problem before the fix and passes afterward.
 - Use **at most three focused tests per task** by default. Add cases when the risk or distinct behaviors justify them. Skip tests for static markup, CSS, and trivial accessors.
 - Run the smallest useful checks during implementation. Run the relevant suite once at the end. Use `php -l` to check the syntax of modified PHP files.
+- Add the standard author and MIT license header to every new PHP file. After staging the file, run `php scripts/add-php-headers.php` or add the equivalent header by hand, then verify it with `php scripts/add-php-headers.php --check`.
 - Core tests are standalone PHP scripts in `tests/`. Run each in a separate process with `php tests/<script>.php`. Follow the `pyroshape-app` skill for authentication tests and their SQLite and PostgreSQL requirements.
 - Use isolated fixtures and test services. Report which checks passed, which were skipped, and why.
 
