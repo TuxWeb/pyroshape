@@ -95,6 +95,10 @@ Explicit `development` mode permits HTTP login cookies and includes the email ve
 
 See the [Pyroshape production deployment guide](https://github.com/TuxWeb/pyroshape/blob/main/docs/operations/deploy-app.md) for artifact validation, smoke checks, and rollback.
 
+#### Optional authenticator sign-in
+
+Apply [`database/migrations/postgresql/002_auth_totp.sql`](database/migrations/postgresql/002_auth_totp.sql) on PostgreSQL or [`database/migrations/002_auth_totp.sql`](database/migrations/002_auth_totp.sql) on MySQL/MariaDB after `001_auth_schema.sql`. Configure the TOTP keyring and open enrollment in the PHP environment. Signed-in users can enroll from **Account security**. The screen displays the QR code, manual key, and a one-time recovery code. Keep the recovery code offline. Users who enroll enter an authenticator code at their next sign-in. [TOTP upgrade and configuration](https://github.com/TuxWeb/pyroshape/blob/v0.10.0/docs/releases/v0.10.0.md)
+
 ## Frontend
 
 The frontend uses SvelteKit 3, Svelte 5, TypeScript, shadcn-svelte, and Tailwind CSS 4. See [frontend setup](frontend/README.md) for supported Node.js versions.

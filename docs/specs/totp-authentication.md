@@ -1,12 +1,12 @@
 # TOTP authentication for Pyroshape
 
-Status: Proposed. This specification defines the first implementation. Each application opts in to enrollment, then each user chooses whether to enroll.
+Implemented in v0.10.0. Each application opts in to enrollment, then each user chooses whether to enroll. [Migration and rollout](../releases/v0.10.0.md)
 
 ## Scope and current behavior
 
 Core owns TOTP verification, enrollment, replacement, recovery, and session issuance. The SvelteKit starter supplies the account security page and two-step login. Consuming SPAs use the same JSON API and cookies with any frontend framework. The first version supports one authenticator secret and one offline recovery code per account. Existing email verification and password policies continue to apply.
 
-Today `AuthService::login()` verifies the password and account status, writes a refresh-token record, and issues the login cookie. `CheckValidAuthToken` and `RequireAuth` serve ordinary authenticated routes. Password change already checks the current refresh token against the database and requires the password. Reuse those boundaries. Put the second-factor decision inside the auth service, so direct calls to `AuthService::login()` also require TOTP, and keep ordinary requests on the existing stateless path. [Auth service](../../src/Auth/AuthService.php) · [Authentication routes](../../src/App.php) · [Session contract](../../skills/pyroshape-app/references/core-contracts.md#stateless-sessions-and-forced-logout)
+Before v0.10.0, `AuthService::login()` issued the login cookie after password and account checks. Core now makes the second-factor decision inside the auth service. `CheckValidAuthToken` and `RequireAuth` still serve ordinary authenticated routes without a database lookup while the access token is valid. Password change and TOTP management check the current refresh record. [Auth service](../../src/Auth/AuthService.php) · [Authentication routes](../../src/App.php) · [Session contract](../../skills/pyroshape-app/references/core-contracts.md#stateless-sessions-and-forced-logout)
 
 ## HTTP contract
 

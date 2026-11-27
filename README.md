@@ -69,7 +69,7 @@ php -S 127.0.0.1:8080 -t public public/index.php
 Install [`tuxweb-it/pyroshape` from Packagist](https://packagist.org/packages/tuxweb-it/pyroshape) by running this command from your app directory.
 
 ~~~sh
-composer require 'tuxweb-it/pyroshape:^0.9.3'
+composer require 'tuxweb-it/pyroshape:^0.10.0'
 ~~~
 
 Commit your app's Composer lockfile to pin the framework revision. The [starter's app class](apps/skeleton/src/App.php) shows how an app extends the framework.
@@ -103,15 +103,19 @@ done
 
 The [PostgreSQL test](tests/postgres_user_repository.php) also runs when `PYROSHAPE_TEST_POSTGRES_DSN` points to an isolated test database and `pdo_pgsql` is enabled.
 
+The [TOTP HTTP test](tests/auth_totp.php) uses a disposable SQLite database by default. To verify the real migrations and HTTP flow, set `AUTH_TOTP_TEST_DRIVER` to `pgsql` or `mysql` and provide `AUTH_TOTP_TEST_DSN`, `AUTH_TOTP_TEST_USER`, and `AUTH_TOTP_TEST_PASSWORD` for an empty test database. The [refresh concurrency test](tests/auth_totp_concurrency.php) uses `AUTH_TOTP_RACE_DSN`, `AUTH_TOTP_RACE_USER`, and `AUTH_TOTP_RACE_PASSWORD` with an empty database and the PHP `pcntl` extension. Each script creates its own schema in the supplied database.
+
 ## Maintain PHP file headers
 
 Stage new PHP files first, then run `php scripts/add-php-headers.php` from a Git checkout to add the project signature and MIT notice to tracked PHP files. The script excludes `vendor/` at every depth and keeps existing signatures. Use `php scripts/add-php-headers.php --check` to list files that still need a header.
 
 ## Releases
 
+**0.10.0** adds optional TOTP sign-in, enrollment and recovery, and coordinated refresh-session revocation. Apply the additive auth migration before enabling TOTP. The release notes list the migration for each database, the affected tables, and the steps to deploy and verify the feature. [Pyroshape 0.10.0 release notes](docs/releases/v0.10.0.md)
+
 Push development and documentation changes to `main` as usual. The package maintainer decides when to publish a stable release on Packagist and sets its version. Create the version tag and GitHub release only with the maintainer's explicit authorization.
 
-Before publishing, inspect the release commit's `git archive` output. Composer dist archives from commits with the export rules include Core and its baseline migration. Use a Git checkout to access the bundled apps and Core tests.
+Before publishing, inspect the release commit's `git archive` output. Composer dist archives include Core, its database migrations, and its registered Composer binaries. Use a Git checkout to access the bundled apps and Core tests.
 
 ## License
 

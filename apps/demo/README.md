@@ -42,6 +42,8 @@ php -S 127.0.0.1:8080 -t public public/index.php
 
 Open [the local demo](http://127.0.0.1:8080/). Register, follow the development verification link, and log in to create a project and manage its tasks.
 
+For TOTP accounts, apply [`003_auth_totp.sql`](database/migrations/003_auth_totp.sql) after the two migrations above and configure the Core TOTP settings. The demo login supports authenticator codes. To enroll or recover a device in a complete UI, use the starter. Project and task deletions require an active refresh session. [TOTP migration and configuration](../../docs/releases/v0.10.0.md)
+
 The four auth variables each require at least 32 bytes. Keep the same values for the lifetime of any sessions you want to preserve. When `PYROSHAPE_ENVIRONMENT` is unset, the app uses production settings, requires HTTPS for its session cookie, and omits verification tokens from API responses. The development verification link and HTTP cookie are intended for a loopback server.
 
 ## Verify
