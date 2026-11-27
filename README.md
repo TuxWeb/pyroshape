@@ -120,3 +120,7 @@ Before publishing, inspect the release commit's `git archive` output. Composer d
 ## License
 
 Pyroshape is released under the [MIT License](LICENSE).
+
+### Warranty and liability
+
+Dino Ciuffetti and TuxWeb S.r.l. provide Pyroshape, its code releases, and its documentation as is, without express or implied warranties. The documentation may contain errors or omissions. As set out in the MIT License and to the extent permitted by applicable law, the author and TuxWeb disclaim liability for claims, losses, or damages arising from the use of Pyroshape or reliance on its documentation. You use Pyroshape at your own risk.
