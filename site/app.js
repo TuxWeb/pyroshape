@@ -1,4 +1,4 @@
-import { content } from './content.js?v=agent-prompt';
+import { content } from './content.js?v=footer-affiliation';
 
 const languageLinks = [...document.querySelectorAll('[data-language]')];
 const phaseButtons = [...document.querySelectorAll('[data-phase]')];

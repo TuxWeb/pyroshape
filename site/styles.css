@@ -426,6 +426,7 @@ code { font: inherit; }
   font: .83rem / 1.5 var(--mono);
 }
 .footer-links { display: flex; justify-content: flex-end; flex-wrap: wrap; column-gap: 18px; }
+.footer-note { padding-bottom: 18px; color: var(--muted); font-size: .8125rem; text-align: center; }
 
 @media (max-width: 920px) {
   .hero-grid { gap: 32px; }

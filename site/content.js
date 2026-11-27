@@ -66,6 +66,7 @@ export const content = {
     footerCookies: "Cookie policy",
     footerPrivacy: "Privacy policy",
     footerFeedback: "Share feedback",
+    footerAffiliation: "TuxWeb S.r.l. and its brands, including Pyroshape, are not affiliated with OpenAI (Codex), Anthropic (Claude Code), PHP-DI, Slim Framework, or the other third-party projects mentioned on this site. Third-party trademarks belong to their respective owners.",
   },
   it: {
     title: "Pyroshape | Un backend PHP open source",
@@ -134,5 +135,6 @@ export const content = {
     footerCookies: "Informativa sui cookie",
     footerPrivacy: "Informativa sulla privacy",
     footerFeedback: "Lascia un feedback",
+    footerAffiliation: "TuxWeb S.r.l. e i suoi marchi, incluso Pyroshape, non sono affiliati a OpenAI (Codex), Anthropic (Claude Code), PHP-DI, Slim Framework o agli altri progetti di terzi citati sul sito. I marchi di terzi appartengono ai rispettivi titolari.",
   },
 };
