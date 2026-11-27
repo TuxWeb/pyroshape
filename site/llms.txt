@@ -1,0 +1,24 @@
+# Pyroshape
+
+> Pyroshape is TuxWeb's MIT-licensed PHP 8.5+ backend for single-page applications. Install the Core library from Packagist as `tuxweb-it/pyroshape`.
+
+Core uses Slim and PHP-DI for routing and dependency injection. It provides JSON APIs, user authentication, stateless sessions, and PDO database access. The SvelteKit starter and the demo live in the Git repository.
+
+## Start here
+
+- [Developer overview](https://pyroshape.tuxweb.it/index.md): What Pyroshape does, how to start, and how sessions work.
+- [Project README](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/README.md): Requirements, installation, and development workflows.
+- [Starter guide](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/apps/skeleton/README.md): Setup, database configuration, and local verification.
+- [Package on Packagist](https://packagist.org/packages/tuxweb-it/pyroshape): Published versions and Composer requirements.
+
+## For developers and coding agents
+
+- [Repository instructions](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/AGENTS.md): Rules for Core, the bundled apps, and releases.
+- [Starter instructions](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/apps/skeleton/AGENTS.md): Guidance for apps scaffolded from the starter.
+- [Core contracts](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/skills/pyroshape-app/references/core-contracts.md): Authentication, session behavior, and app extension points.
+- [Production deployment guide](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/docs/operations/deploy-app.md): Application artifacts, preflight, and production verification.
+
+## Optional
+
+- [Projects and Tasks demo](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/apps/demo/README.md): An example of authenticated CRUD.
+- [MIT license](https://raw.githubusercontent.com/TuxWeb/pyroshape/main/LICENSE): License for the framework.

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pyroshape.tuxweb.it/sitemap.xml
