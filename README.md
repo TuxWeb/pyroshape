@@ -2,9 +2,9 @@
 
 Build a single-page application with your choice of frontend and a straightforward PHP backend. Pyroshape is an open-source Composer package for PHP 8.5+, built on Slim and PHP-DI and released under the MIT license. The same PHP app can serve your compiled frontend and its JSON API, so the browser can use cookie-based sessions on a single origin.
 
-Pyroshape provides authentication, session handling, logging, JSON errors, and database access through PDO. Extend the app class to add your own routes, middleware, and business logic. Start with the bundled SvelteKit app or connect an existing frontend to the API.
+Pyroshape provides authentication, stateless session handling, logging, JSON errors, and database access through PDO. Extend the app class to add your own routes, middleware, and business logic. Start with the bundled SvelteKit app or connect an existing frontend to the API.
 
-Built by TuxWeb. The team estimates that it developed and tested 95% of Pyroshape by hand. [Visit TuxWeb](https://www.tuxweb.it/) · [Support the maintainer in Monero](DONATE.md)
+This PHP Backend comes from years of hand developing and testing by [TuxWeb S.r.l.](https://www.tuxweb.it/), and we already use this in production for most of our products and services. · [Support the maintainer in Monero](DONATE.md)
 
 ## What you can build quickly
 
