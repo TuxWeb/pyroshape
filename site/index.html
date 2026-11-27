@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en" data-type="software">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <meta name="theme-color" content="#12100f">
+  <meta name="description" content="An open-source PHP backend for single-page apps, built on Slim and PHP-DI.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Pyroshape · PHP for single-page apps">
+  <meta property="og:description" content="An open-source PHP backend for single-page apps, built on Slim and PHP-DI.">
+  <title>Pyroshape · PHP for single-page apps</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body id="top">
+  <a class="skip-link" href="#main" data-text="skip">Skip to content</a>
+  <header class="header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top" aria-label="Pyroshape">
+        <span class="brand-mark" aria-hidden="true">P</span><span>pyroshape<span class="brand-period">.</span></span>
+      </a>
+      <nav class="nav" aria-label="Pyroshape">
+        <a href="#why" data-text="navWhy">Why Pyroshape</a>
+        <a href="#how" data-text="navHow">Get started</a>
+      </nav>
+      <div class="header-actions">
+        <div class="languages" role="group" aria-label="Language" data-label="languageLabel">
+          <a href="?lang=en" lang="en" hreflang="en" aria-label="English" aria-current="true" data-language="en">EN</a>
+          <a href="?lang=it" lang="it" hreflang="it" aria-label="Italiano" data-language="it">IT</a>
+        </div>
+        <a class="github" href="https://github.com/TuxWeb/pyroshape" data-text="navGithub">GitHub</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero" aria-labelledby="hero-heading">
+      <div class="wrap hero-grid">
+        <div class="hero-copy" data-enter>
+          <p class="metadata"><span aria-hidden="true"></span> PHP 8.5+ <span class="meta-separator">/</span> <span data-text="footerLegal">MIT license</span></p>
+          <h1 id="hero-heading" data-text="heroTitle">A PHP backend for single-page apps.</h1>
+          <p class="lead" data-text="heroText">Serve your frontend and JSON API from one app. Pyroshape handles sign-in, sessions, and the HTTP plumbing so you can build the features your app needs.</p>
+          <div class="actions">
+            <a class="button primary" href="#how" data-text="heroPrimary">Start a project</a>
+            <a class="button secondary" href="#why" data-text="heroSecondary">See how it works</a>
+          </div>
+          <p class="hero-note" data-text="heroNote">Built on Slim and PHP-DI.</p>
+        </div>
+        <div class="diagram" data-visual data-diagram="request" data-enter aria-labelledby="diagram-title" role="group">
+          <div class="diagram-bar">
+            <span id="diagram-title">HTTP <span class="dim">/</span> JSON</span>
+            <span class="code-tag">PSR-7</span>
+          </div>
+          <div class="diagram-grid">
+            <div class="node node-browser"><span class="node-icon" aria-hidden="true">[ ]</span><strong data-text="visualBrowser">Browser</strong></div>
+            <div class="wire" aria-hidden="true"></div>
+            <div class="cookie-box">
+              <strong data-text="visualCookie">Encrypted cookie</strong>
+              <div class="token-pair">
+                <span data-text="visualAccess">Access JWT</span><span data-text="visualRefresh">Refresh JWT</span>
+              </div>
+            </div>
+            <div class="wire" aria-hidden="true"></div>
+            <div class="node node-core"><span class="node-icon" aria-hidden="true">&lt;?&gt;</span><strong data-text="visualApp">Pyroshape API</strong></div>
+            <div class="fork" aria-hidden="true"></div>
+            <div class="branches">
+              <div><span data-text="visualRoute">Ordinary request</span><strong>JSON API</strong></div>
+              <div><span data-text="visualRenew">Session renewal</span><strong data-text="visualData">Database</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section why" id="why" aria-labelledby="why-heading">
+      <div class="wrap">
+        <div class="section-intro">
+          <h2 id="why-heading" data-text="whyTitle">Why Pyroshape</h2>
+          <p data-text="whyText">Keep the backend small enough to follow from request to response. Core handles authentication, PDO, logging, and JSON errors. Your app owns its routes, rules, and data.</p>
+        </div>
+        <dl class="stack">
+          <div><dt>Slim</dt><dd data-text="stackSlim">Slim routes requests and runs middleware. Add a route or a request check where your app needs it.</dd></div>
+          <div><dt>PHP-DI</dt><dd data-text="stackDI">PHP-DI wires constructor dependencies. Test controllers and services with the dependencies you choose.</dd></div>
+          <div><dt><a href="https://www.php-fig.org/psr/">PHP-FIG / PSR</a></dt><dd data-text="stackPSR">Standard interfaces connect HTTP messages (PSR-7), middleware (PSR-15), containers (PSR-11), and logging (PSR-3).</dd></div>
+        </dl>
+        <div class="session-grid">
+          <div class="session-heading">
+            <h3 data-text="sessionTitle">Stateless on ordinary requests</h3>
+            <p data-text="sessionText">The browser sends one encrypted cookie containing two signed JWTs. A short-lived access token authenticates ordinary requests. A longer-lived refresh token can renew access after a database check.</p>
+          </div>
+          <div class="session-workbench" data-ui="session-trace" data-phase-view="access">
+            <div class="phase-controls" role="group" aria-labelledby="phase-label">
+              <span class="visually-hidden" id="phase-label" data-text="sessionTitle">Stateless on ordinary requests</span>
+              <button type="button" aria-pressed="true" data-phase="access" data-text="phaseAccess">Access</button>
+              <button type="button" aria-pressed="false" data-phase="refresh" data-text="phaseRefresh">Renewal</button>
+              <button type="button" aria-pressed="false" data-phase="logout" data-text="phaseLogout">Logout</button>
+            </div>
+            <div class="phase-output" aria-live="polite" aria-atomic="true">
+              <div class="phase-trace" aria-hidden="true"><span>HTTP</span><i></i><span>JWT</span><i></i><span>PDO</span></div>
+              <div class="phase-result"><span aria-hidden="true">›</span><strong id="phase-result">Request authenticated from the token</strong></div>
+              <p id="phase-description">Core verifies the access JWT and reads its claims. With a valid access token, ordinary authentication skips the session lookup in the database.</p>
+            </div>
+          </div>
+        </div>
+        <div class="user-line">
+          <h3 data-text="userTitle">User accounts come with Core</h3>
+          <p data-text="userText">Register, verify an email address, sign in, check the session, change a password, and sign out through JSON endpoints. For sensitive actions, check current session status, permissions, and ownership in your app.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section how" id="how" aria-labelledby="how-heading">
+      <div class="wrap">
+        <div class="section-intro">
+          <h2 id="how-heading" data-text="howTitle">How to use Pyroshape</h2>
+          <p data-text="howText">Add Core to a PHP app with Composer, or start with the SvelteKit starter and its sign-in flow.</p>
+        </div>
+        <div class="quickstart">
+          <div class="step">
+            <h3 data-text="installTitle">Install with Composer</h3>
+            <p data-text="installText">Run this in your app directory with PHP 8.5 or later.</p>
+            <div class="code-panel" data-ui="composer-terminal">
+              <div class="code-bar"><span>Terminal</span><button type="button" class="copy-button" data-copy="install-code" data-text="copy">Copy</button></div>
+              <pre tabindex="0"><code id="install-code"><span class="syntax-word">composer require</span> <span class="syntax-string">tuxweb-it/pyroshape</span></code></pre>
+            </div>
+          </div>
+          <div class="step route-step">
+            <h3 data-text="routeTitle">Add a JSON endpoint</h3>
+            <p data-text="routeText">Extend the Core App class and register your Slim routes in setupAppRoutes(). Core registers those routes before the SPA fallback.</p>
+            <div class="code-panel" data-ui="php-editor">
+              <div class="code-bar"><span data-text="codeLabel">src/App.php</span><button type="button" class="copy-button" data-copy="route-code" data-text="copy">Copy</button></div>
+              <pre tabindex="0"><code id="route-code"><span class="syntax-word">&lt;?php</span>
+
+<span class="syntax-word">use</span> Psr\Http\Message\ResponseInterface;
+<span class="syntax-word">use</span> Psr\Http\Message\ServerRequestInterface;
+<span class="syntax-word">use</span> TuxWeb\Pyroshape\Core\App <span class="syntax-word">as</span> CoreApp;
+
+<span class="syntax-word">final class</span> App <span class="syntax-word">extends</span> CoreApp
+{
+    <span class="syntax-word">protected function</span> setupAppRoutes(): void
+    {
+        $this-&gt;getSlimApp()-&gt;get(
+            <span class="syntax-string">'/api/ping'</span>,
+            static function (
+                ServerRequestInterface $request,
+                ResponseInterface $response,
+            ): ResponseInterface {
+                $response-&gt;getBody()-&gt;write(<span class="syntax-string">'{"ok":true}'</span>);
+                return $response-&gt;withHeader(
+                    <span class="syntax-string">'Content-Type'</span>, <span class="syntax-string">'application/json'</span>
+                );
+            },
+        );
+    }
+}</code></pre>
+            </div>
+          </div>
+          <div class="step starter-step">
+            <h3 data-text="starterTitle">Start with a working app</h3>
+            <p data-text="starterText">Clone the repository for a SvelteKit and TypeScript starter with shadcn-svelte and PostgreSQL setup. The demo shows authenticated CRUD for projects and tasks.</p>
+            <div class="resource-links">
+              <a href="https://github.com/TuxWeb/pyroshape/tree/main/apps/skeleton" data-text="starterLink">Open the starter</a>
+              <a href="https://github.com/TuxWeb/pyroshape/tree/main/apps/demo" data-text="demoLink">Explore the demo</a>
+            </div>
+          </div>
+        </div>
+        <div class="use-line">
+          <h3 data-text="buildsTitle">What you can build</h3>
+          <ul>
+            <li data-text="useOne">Internal tools for tracking requests, assets, or inventory.</li>
+            <li data-text="useTwo">Customer portals where people manage their own projects or tasks.</li>
+            <li data-text="useThree">Dashboards that use the data and services you already run.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tux" aria-labelledby="tux-heading">
+      <div class="wrap tux-inner">
+        <div>
+          <h2 id="tux-heading" data-text="tuxTitle">TuxWeb, open source for over 20 years</h2>
+          <p data-text="tuxText">TuxWeb has built with open source since 2005. Pyroshape is a strategic part of that work, sharing a PHP foundation that teams can inspect, adapt, and run on their own infrastructure.</p>
+          <a class="button secondary" href="https://www.tuxweb.it/chi-siamo" data-text="tuxLink">About TuxWeb</a>
+        </div>
+        <div class="date-mark" aria-hidden="true"><span>OSS</span><strong>2005</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-inner">
+      <span>Pyroshape <span class="dim">/</span> <span data-text="footerLegal">MIT license</span></span>
+      <a href="https://github.com/TuxWeb/pyroshape/issues/new" data-text="footerFeedback">Share feedback</a>
+    </div>
+  </footer>
+  <span class="visually-hidden" id="copy-status" role="status"></span>
+</body>
+</html>

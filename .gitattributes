@@ -1,4 +1,5 @@
-# Keep repository-only applications, tests, and maintenance scripts out of Composer dist archives.
+# Keep repository-only applications, tests, tooling, and the website out of Composer dist archives.
 /apps export-ignore
 /scripts export-ignore
+/site export-ignore
 /tests export-ignore
