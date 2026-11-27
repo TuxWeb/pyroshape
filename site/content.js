@@ -63,6 +63,8 @@ export const content = {
     tuxText: "TuxWeb has built with open source since 2005. Pyroshape is a strategic part of that work, sharing a PHP foundation that teams can inspect, adapt, and run on their own infrastructure.",
     tuxLink: "About TuxWeb",
     footerLegal: "MIT license",
+    footerCookies: "Cookie policy",
+    footerPrivacy: "Privacy policy",
     footerFeedback: "Share feedback",
   },
   it: {
@@ -129,6 +131,8 @@ export const content = {
     tuxText: "TuxWeb sviluppa con l’open source dal 2005. Pyroshape è un progetto strategico di questo lavoro: una base PHP che i team possono ispezionare, adattare e far girare sulla propria infrastruttura.",
     tuxLink: "Chi è TuxWeb",
     footerLegal: "Licenza MIT",
+    footerCookies: "Informativa sui cookie",
+    footerPrivacy: "Informativa sulla privacy",
     footerFeedback: "Lascia un feedback",
   },
 };

@@ -416,6 +416,7 @@ code { font: inherit; }
 .date-mark strong { color: var(--accent); font: 650 clamp(3rem, 9.6vw, 9rem) / 1.1 var(--sans); letter-spacing: -.09em; }
 .footer { border-top: 1px solid var(--line); }
 .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; min-height: 68px; gap: 4px 18px; color: var(--muted); font: .83rem / 1.5 var(--mono); }
+.footer-links { display: flex; flex-wrap: wrap; column-gap: 18px; }
 
 @media (max-width: 920px) {
   .hero-grid { gap: 32px; }
