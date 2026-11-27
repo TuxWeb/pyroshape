@@ -18,6 +18,9 @@ namespace TuxWeb\Pyroshape\Core\Controllers;
 
 use TuxWeb\Pyroshape\Core\Auth\AuthService;
 use TuxWeb\Pyroshape\Core\Auth\AuthException;
+use TuxWeb\Pyroshape\Core\Auth\TotpException;
+use TuxWeb\Pyroshape\Core\Http\TotpErrorResponse;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireSameOrigin;
 use InvalidArgumentException;
 use PDOException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -27,8 +30,11 @@ use RuntimeException;
 
 class AuthController
 {
-    public function __construct(private AuthService $auth, private LoggerInterface $logger)
-    {
+    public function __construct(
+        private AuthService $auth,
+        private LoggerInterface $logger,
+        private ?RequireSameOrigin $requireSameOrigin = null
+    ) {
     }
 
     public function postRegister(Request $request, Response $response): Response
@@ -89,18 +95,27 @@ class AuthController
 
     public function postLogin(Request $request, Response $response): Response
     {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         try {
             $body = $this->requestBody($request);
-            $payload = $this->auth->login(
+            $payload = $this->auth->loginHttp(
                 $this->stringField($body, 'email'),
                 $this->stringField($body, 'password'),
                 $response,
-                $this->boolField($body, 'rememberMe', false)
+                $this->boolField($body, 'rememberMe', false),
+                $request,
+                fn (Request $candidate): bool => $this->requireSameOrigin?->allows($candidate)
+                    ?? RequireSameOrigin::matches($candidate)
             );
             $response = $this->payloadResponse($payload, $response);
+            if (($payload['next'] ?? null) === 'totp_required') {
+                return $this->json($response, $this->withoutResponse($payload), 202);
+            }
             $this->logger->info('auth.login_succeeded', $this->userLogContext($payload));
 
             return $this->json($response, $this->withoutResponse($payload));
+        } catch (TotpException $exception) {
+            return TotpErrorResponse::write($response, $exception);
         } catch (AuthException $exception) {
             $message = $exception->statusCode() === 401
                 ? 'Invalid email or password'
@@ -123,6 +138,7 @@ class AuthController
 
     public function postLogout(Request $request, Response $response): Response
     {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         if (!$this->hasValidSameOriginHeader($request)) {
             $this->logger->warning('auth.logout_forbidden_origin', [
                 'origin' => $request->getHeaderLine('Origin'),
@@ -132,7 +148,11 @@ class AuthController
             return $this->jsonError($response, 'Forbidden', 403);
         }
 
-        $payload = $this->auth->logout($request, $response);
+        try {
+            $payload = $this->auth->logout($request, $response);
+        } catch (TotpException $exception) {
+            return TotpErrorResponse::write($response, $exception);
+        }
         $response = $this->payloadResponse($payload, $response);
         $this->logger->info('auth.logout_succeeded', $this->userLogContext($payload));
 
@@ -180,6 +200,7 @@ class AuthController
 
     public function getSession(Request $request, Response $response): Response
     {
+        $response = $response->withHeader('Cache-Control', 'no-store');
         $payload = $this->auth->getSession($request, $response);
         $response = $this->payloadResponse($payload, $response);
         if (($payload['authenticated'] ?? false) === true) {

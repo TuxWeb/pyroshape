@@ -114,6 +114,17 @@ final class LoggingTestAuthService extends AuthService
         return $this->loginPayload + ['response' => $response];
     }
 
+    public function loginHttp(
+        string $email,
+        string $password,
+        ResponseInterface $response,
+        bool $rememberMe,
+        ServerRequestInterface $request,
+        callable $requireOrigin
+    ): array {
+        return $this->login($email, $password, $response, $rememberMe);
+    }
+
     public function logout(ServerRequestInterface $request, ResponseInterface $response): array
     {
         return $this->logoutPayload + ['response' => $response];

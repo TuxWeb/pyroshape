@@ -17,10 +17,25 @@ declare(strict_types=1);
 namespace TuxWeb\Pyroshape\Core\Auth;
 
 use PDO;
+use PDOStatement;
+use RuntimeException;
+use SensitiveParameter;
 use Throwable;
 
 class UserRepository
 {
+    private const USER_FIELDS = 'id, email, pwdhash, enabled, email_verified, nickname, name, surname, created_at, updated_at';
+
+    private const TOTP_FIELDS = [
+        'totp_enabled',
+        'totp_secret_encrypted',
+        'totp_enabled_at',
+        'totp_disabled_at',
+        'totp_last_used_step',
+        'totp_recovery_code_hash',
+        'auth_version',
+    ];
+
     public function __construct(private PDO $pdo)
     {
     }
@@ -55,18 +70,20 @@ class UserRepository
 
     public function findUserByEmail(string $email): ?array
     {
-        $statement = $this->pdo->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
-        $statement->execute(['email' => self::normalizeEmail($email)]);
-        $row = $statement->fetch();
+        $row = $this->execute(
+            'SELECT * FROM users WHERE email = :email LIMIT 1',
+            ['email' => self::normalizeEmail($email)]
+        )->fetch(PDO::FETCH_ASSOC);
 
-        return is_array($row) ? $this->normalizeUserRow($row) : null;
+        return is_array($row) ? $this->normalizeAuthUserRow($row) : null;
     }
 
     public function findUserById(int $id): ?array
     {
-        $statement = $this->pdo->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
-        $statement->execute(['id' => $id]);
-        $row = $statement->fetch();
+        $row = $this->execute(
+            'SELECT ' . self::USER_FIELDS . ' FROM users WHERE id = :id LIMIT 1',
+            ['id' => $id]
+        )->fetch(PDO::FETCH_ASSOC);
 
         return is_array($row) ? $this->normalizeUserRow($row) : null;
     }
@@ -74,89 +91,50 @@ class UserRepository
     public function markUserVerifiedAndEnabled(int $userId, ?string $verifiedAt = null): ?array
     {
         $now = $verifiedAt ?? $this->now();
-        $statement = $this->pdo->prepare(
-            'UPDATE users
-             SET email_verified = TRUE, enabled = TRUE, updated_at = :updated_at
-             WHERE id = :id'
-        );
-        $statement->execute([
-            'id' => $userId,
-            'updated_at' => $now,
-        ]);
+        $verify = function (?array $user) use ($userId, $now): ?array {
+            if ($user === null) {
+                return null;
+            }
 
-        return $this->findUserById($userId);
-    }
-
-    public function storeRefreshToken(
-        int $userId,
-        string $jti,
-        string $tokenHash,
-        string $released,
-        string $expiration
-    ): void {
-        $statement = $this->pdo->prepare(
-            'INSERT INTO auth_tokens (users_id, jti, token_hash, released, expiration, revocation_time)
-             VALUES (:users_id, :jti, :token_hash, :released, :expiration, NULL)'
-        );
-        $statement->execute([
-            'users_id' => $userId,
-            'jti' => $jti,
-            'token_hash' => $tokenHash,
-            'released' => $released,
-            'expiration' => $expiration,
-        ]);
-    }
-
-    public function revokeRefreshTokenByJti(string $jti, ?string $revokedAt = null): bool
-    {
-        $statement = $this->pdo->prepare(
-            'UPDATE auth_tokens
-             SET revocation_time = :revocation_time
-             WHERE jti = :jti AND revocation_time IS NULL'
-        );
-        $statement->execute([
-            'jti' => $jti,
-            'revocation_time' => $revokedAt ?? $this->now(),
-        ]);
-
-        return $statement->rowCount() > 0;
-    }
-
-    public function changePasswordAndRevokeOtherRefreshTokens(
-        int $userId,
-        string $passwordHash,
-        string $keepRefreshTokenJti,
-        ?string $timestamp = null
-    ): void {
-        $now = $timestamp ?? $this->now();
-
-        $this->pdo->beginTransaction();
-        try {
-            $updateUser = $this->pdo->prepare(
+            $changeEligibility = $user['auth_version'] !== null && (!$user['enabled'] || !$user['email_verified']);
+            $version = $changeEligibility ? ', auth_version = auth_version + 1' : '';
+            $this->execute(
                 'UPDATE users
-                 SET pwdhash = :pwdhash, updated_at = :updated_at
-                 WHERE id = :id'
+                 SET email_verified = TRUE, enabled = TRUE, updated_at = :updated_at' . $version . '
+                 WHERE id = :id',
+                ['id' => $userId, 'updated_at' => $now]
             );
-            $updateUser->execute([
-                'id' => $userId,
-                'pwdhash' => $passwordHash,
-                'updated_at' => $now,
-            ]);
 
-            $revokeTokens = $this->pdo->prepare(
-                'UPDATE auth_tokens
-                 SET revocation_time = :revocation_time
-                 WHERE users_id = :users_id
-                   AND jti <> :keep_jti
-                   AND revocation_time IS NULL'
-            );
-            $revokeTokens->execute([
-                'users_id' => $userId,
-                'keep_jti' => $keepRefreshTokenJti,
-                'revocation_time' => $now,
-            ]);
+            if ($changeEligibility) {
+                $this->totpRepository()->consumeFlows($userId, $now);
+            }
 
-            $this->pdo->commit();
+            return $this->findUserById($userId);
+        };
+
+        if ($this->pdo->inTransaction()) {
+            return $verify($this->findLockedUser($userId));
+        }
+
+        return $this->withLockedUser($userId, $verify);
+    }
+
+    public function totpRepository(): TotpRepository
+    {
+        return new TotpRepository($this->pdo);
+    }
+
+    /** @param callable(?array): mixed $action */
+    public function withLockedUser(int $userId, callable $action): mixed
+    {
+        $this->beginWriteTransaction();
+        try {
+            $result = $action($this->findLockedUser($userId));
+            if (!$this->pdo->commit()) {
+                throw new RuntimeException('Authentication transaction could not be committed');
+            }
+
+            return $result;
         } catch (Throwable $throwable) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -166,22 +144,116 @@ class UserRepository
         }
     }
 
-    public function findValidRefreshToken(string $jti, string $tokenHash, ?string $now = null): ?array
+    public function storeRefreshToken(
+        int $userId,
+        string $jti,
+        #[SensitiveParameter] string $tokenHash,
+        string $released,
+        string $expiration
+    ): void {
+        $this->execute(
+            'INSERT INTO auth_tokens (users_id, jti, token_hash, released, expiration, revocation_time)
+             VALUES (:users_id, :jti, :token_hash, :released, :expiration, NULL)',
+            [
+                'users_id' => $userId,
+                'jti' => $jti,
+                'token_hash' => $tokenHash,
+                'released' => $released,
+                'expiration' => $expiration,
+            ]
+        );
+    }
+
+    public function revokeRefreshTokenByJti(string $jti, ?string $revokedAt = null): bool
     {
-        $statement = $this->pdo->prepare(
+        $statement = $this->execute(
+            'UPDATE auth_tokens
+             SET revocation_time = :revocation_time
+             WHERE jti = :jti AND revocation_time IS NULL',
+            ['jti' => $jti, 'revocation_time' => $revokedAt ?? $this->now()]
+        );
+
+        return $statement->rowCount() > 0;
+    }
+
+    public function changePasswordAndRevokeOtherRefreshTokens(
+        int $userId,
+        #[SensitiveParameter] string $passwordHash,
+        string $keepRefreshTokenJti,
+        ?string $timestamp = null
+    ): void {
+        $now = $timestamp ?? $this->now();
+        $change = function (?array $user) use ($userId, $passwordHash, $keepRefreshTokenJti, $now): void {
+            if ($user === null) {
+                return;
+            }
+
+            $version = $user['auth_version'] !== null ? ', auth_version = auth_version + 1' : '';
+            $this->execute(
+                'UPDATE users
+                 SET pwdhash = :pwdhash, updated_at = :updated_at' . $version . '
+                 WHERE id = :id',
+                [
+                    'id' => $userId,
+                    'pwdhash' => $passwordHash,
+                    'updated_at' => $now,
+                ]
+            );
+
+            if ($user['auth_version'] !== null) {
+                $this->totpRepository()->consumeFlows($userId, $now);
+            }
+
+            $this->execute(
+                'UPDATE auth_tokens
+                 SET revocation_time = :revocation_time
+                 WHERE users_id = :users_id
+                   AND jti <> :keep_jti
+                   AND revocation_time IS NULL',
+                [
+                    'users_id' => $userId,
+                    'keep_jti' => $keepRefreshTokenJti,
+                    'revocation_time' => $now,
+                ]
+            );
+        };
+
+        if ($this->pdo->inTransaction()) {
+            $change($this->findLockedUser($userId));
+            return;
+        }
+
+        $this->withLockedUser($userId, $change);
+    }
+
+    public function findValidRefreshToken(string $jti, #[SensitiveParameter] string $tokenHash, ?string $now = null): ?array
+    {
+        return $this->readValidRefreshToken($jti, $tokenHash, $now, false);
+    }
+
+    public function findValidRefreshTokenForUpdate(
+        string $jti,
+        #[SensitiveParameter] string $tokenHash,
+        ?string $now = null
+    ): ?array {
+        return $this->readValidRefreshToken($jti, $tokenHash, $now, true);
+    }
+
+    private function readValidRefreshToken(
+        string $jti,
+        #[SensitiveParameter] string $tokenHash,
+        ?string $now,
+        bool $lock
+    ): ?array {
+        $row = $this->execute(
             'SELECT * FROM auth_tokens
              WHERE jti = :jti
                AND token_hash = :token_hash
                AND revocation_time IS NULL
                AND expiration >= :now
-             LIMIT 1'
-        );
-        $statement->execute([
-            'jti' => $jti,
-            'token_hash' => $tokenHash,
-            'now' => $now ?? $this->now(),
-        ]);
-        $row = $statement->fetch();
+             LIMIT 1' . ($lock ? $this->lockClause() : ''),
+            ['jti' => $jti, 'token_hash' => $tokenHash, 'now' => $now ?? $this->now()]
+        )->fetch(PDO::FETCH_ASSOC);
 
         return is_array($row) ? $this->normalizeRefreshTokenRow($row) : null;
     }
@@ -209,7 +281,7 @@ class UserRepository
     {
         $timestamp = $now ?? $this->now();
 
-        $this->pdo->beginTransaction();
+        $this->beginWriteTransaction();
         try {
             $select = $this->pdo->prepare(
                 'SELECT * FROM email_verification_tokens
@@ -265,6 +337,71 @@ class UserRepository
     private function now(): string
     {
         return gmdate('Y-m-d H:i:s');
+    }
+
+    private function beginWriteTransaction(): void
+    {
+        // SQLite has no row locks. Reserve its write lock before reading authentication state.
+        $started = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite'
+            ? $this->pdo->exec('BEGIN IMMEDIATE') !== false
+            : $this->pdo->beginTransaction();
+        if (!$started) {
+            throw new RuntimeException('Authentication transaction could not be started');
+        }
+    }
+
+    private function lockClause(): string
+    {
+        return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME) === 'sqlite' ? '' : ' FOR UPDATE';
+    }
+
+    private function findLockedUser(int $userId): ?array
+    {
+        $row = $this->execute(
+            'SELECT * FROM users WHERE id = :id' . $this->lockClause(),
+            ['id' => $userId]
+        )->fetch(PDO::FETCH_ASSOC);
+
+        return is_array($row) ? $this->normalizeAuthUserRow($row) : null;
+    }
+
+    private function execute(string $sql, #[SensitiveParameter] array $params): PDOStatement
+    {
+        $statement = $this->pdo->prepare($sql);
+        if ($statement === false || !$statement->execute($params)) {
+            throw new RuntimeException('Authentication persistence is unavailable');
+        }
+
+        return $statement;
+    }
+
+    private function normalizeAuthUserRow(array $row): array
+    {
+        // Determine legacy compatibility from the actual row schema, without masking database errors.
+        $fieldsPresent = count(array_intersect(self::TOTP_FIELDS, array_keys($row)));
+        if ($fieldsPresent === 0) {
+            return $this->normalizeUserRow($row) + [
+                'totp_enabled' => false,
+                'auth_version' => null,
+                'totp_enabled_at' => null,
+                'totp_disabled_at' => null,
+            ];
+        }
+
+        if ($fieldsPresent !== count(self::TOTP_FIELDS)
+            || !in_array($row['totp_enabled'], [true, false, 1, 0, 't', 'f', '1', '0'], true)
+            || !(is_int($row['auth_version']) || is_string($row['auth_version']) && ctype_digit($row['auth_version']))
+            || (int) $row['auth_version'] < 0
+        ) {
+            throw new RuntimeException('TOTP user schema is unavailable');
+        }
+
+        return $this->normalizeUserRow($row) + [
+            'totp_enabled' => in_array($row['totp_enabled'], [true, 1, 't', '1'], true),
+            'auth_version' => (int) $row['auth_version'],
+            'totp_enabled_at' => $row['totp_enabled_at'],
+            'totp_disabled_at' => $row['totp_disabled_at'],
+        ];
     }
 
     /**

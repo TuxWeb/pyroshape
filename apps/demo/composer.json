@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "tuxweb-it/pyroshape": "^0.9.3"
+        "tuxweb-it/pyroshape": "^0.10.0"
     },
     "repositories": [
         {
@@ -20,7 +20,7 @@
                 "symlink": true,
                 "reference": "config",
                 "versions": {
-                    "tuxweb-it/pyroshape": "0.9.3"
+                    "tuxweb-it/pyroshape": "0.10.0"
                 }
             }
         }

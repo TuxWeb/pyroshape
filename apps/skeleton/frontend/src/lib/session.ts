@@ -71,6 +71,10 @@ export async function loadSession(): Promise<Session> {
 
 export async function logout(): Promise<void> {
   await apiJson<Session>('/api/auth/logout', { method: 'POST' });
+  clearSession();
+}
+
+export function clearSession(): void {
   sessionRequestId += 1;
   sessionRequest = null;
   session.set(anonymousSession);

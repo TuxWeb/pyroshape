@@ -18,6 +18,7 @@ namespace TuxWeb\Pyroshape\Core;
 
 use TuxWeb\Pyroshape\Core\Controllers\AuthController;
 use TuxWeb\Pyroshape\Core\Controllers\HealthController;
+use TuxWeb\Pyroshape\Core\Controllers\TotpController;
 use TuxWeb\Pyroshape\Core\Database\PdoFactory;
 use TuxWeb\Pyroshape\Core\Exceptions\ConfigNotValidException;
 use TuxWeb\Pyroshape\Core\Exceptions\JsonErrorHandler;
@@ -25,6 +26,8 @@ use TuxWeb\Pyroshape\Core\Logger\AccessLogger;
 use TuxWeb\Pyroshape\Core\Logger\AppLogger;
 use TuxWeb\Pyroshape\Core\Logger\LineLogFormat;
 use TuxWeb\Pyroshape\Core\Middlewares\AddDefaultHeaders;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireCurrentSession;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireSameOrigin;
 use TuxWeb\Pyroshape\Core\Middlewares\ContentLength;
 use TuxWeb\Pyroshape\Core\Middlewares\RemoveTrailingSlash;
 use TuxWeb\Pyroshape\Core\Middlewares\RequestLogger;
@@ -119,6 +122,9 @@ class App
             $builder->enableCompilation($containerCacheDir, $compiledContainerClass);
             $builder->writeProxiesToFile(true, $containerCacheDir . '/proxies');
         }
+        $builder->addDefinitions([
+            AuthController::class => \DI\autowire()->constructorParameter('requireSameOrigin', \DI\get(RequireSameOrigin::class)),
+        ]);
         $builder->addDefinitions($configFile);
         $builder->addDefinitions([
             AppLogger::class => function (ContainerInterface $container): AppLogger {
@@ -290,6 +296,20 @@ class App
         $this->slimApp->post('/api/auth/change-password', [AuthController::class, 'postChangePassword'])
             ->setName('auth.change-password');
         $this->slimApp->get('/api/session', [AuthController::class, 'getSession'])->setName('session');
+        $this->slimApp->post('/api/auth/login/totp', [TotpController::class, 'login'])
+            ->add(RequireSameOrigin::class)->setName('auth.login.totp');
+        $this->slimApp->get('/api/auth/totp', [TotpController::class, 'status'])
+            ->add(RequireCurrentSession::class)->setName('auth.totp.status');
+        $this->slimApp->post('/api/auth/totp/setup', [TotpController::class, 'setup'])
+            ->add(RequireCurrentSession::class)->add(RequireSameOrigin::class)->setName('auth.totp.setup');
+        $this->slimApp->post('/api/auth/totp/setup/confirm', [TotpController::class, 'confirmSetup'])
+            ->add(RequireCurrentSession::class)->add(RequireSameOrigin::class)->setName('auth.totp.setup.confirm');
+        $this->slimApp->post('/api/auth/totp/disable', [TotpController::class, 'disable'])
+            ->add(RequireCurrentSession::class)->add(RequireSameOrigin::class)->setName('auth.totp.disable');
+        $this->slimApp->post('/api/auth/totp/recovery', [TotpController::class, 'recover'])
+            ->add(RequireSameOrigin::class)->setName('auth.totp.recovery');
+        $this->slimApp->post('/api/auth/totp/recovery/confirm', [TotpController::class, 'confirmRecovery'])
+            ->add(RequireSameOrigin::class)->setName('auth.totp.recovery.confirm');
 
         $this->setupAppRoutes();
         $this->setupSpaRoutes();

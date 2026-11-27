@@ -23,12 +23,15 @@ use TuxWeb\Pyroshape\Core\Http\EncryptedCookies;
 use Firebase\JWT\ExpiredException;
 use InvalidArgumentException;
 use JsonException;
+use Psr\Clock\ClockInterface;
+use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
+use SensitiveParameter;
 use Throwable;
 
 class AuthService
@@ -37,6 +40,7 @@ class AuthService
 
     private ?UserRepository $users;
     private LoggerInterface $logger;
+    private ?TotpService $totp = null;
 
     public function __construct(private ContainerInterface $container, ?UserRepository $users = null)
     {
@@ -101,19 +105,115 @@ class AuthService
     }
 
     /**
+     * An enrolled user gets a pending outcome. Browser callers use loginHttp to open a challenge.
+     *
      * @return array<string, mixed>
      */
-    public function login(string $email, string $password, ResponseInterface $response, bool $rememberMe = false): array
-    {
+    public function login(
+        string $email,
+        #[SensitiveParameter]
+        string $password,
+        ResponseInterface $response,
+        bool $rememberMe = false
+    ): array {
+        return $this->passwordLogin($email, $password, $response, $rememberMe);
+    }
+
+    /**
+     * @param callable(ServerRequestInterface): bool $requireOrigin
+     * @return array<string, mixed>
+     */
+    public function loginHttp(
+        string $email,
+        #[SensitiveParameter]
+        string $password,
+        ResponseInterface $response,
+        bool $rememberMe,
+        ServerRequestInterface $request,
+        callable $requireOrigin
+    ): array {
+        return $this->passwordLogin($email, $password, $response, $rememberMe, $request, $requireOrigin);
+    }
+
+    /**
+     * @param (callable(ServerRequestInterface): bool)|null $requireOrigin
+     * @return array<string, mixed>
+     */
+    private function passwordLogin(
+        string $email,
+        #[SensitiveParameter]
+        string $password,
+        ResponseInterface $response,
+        bool $rememberMe,
+        ?ServerRequestInterface $request = null,
+        ?callable $requireOrigin = null
+    ): array {
         $this->assertValidPassword($password);
 
-        $user = $this->users()->findUserByEmail($email);
-        $passwordHash = is_array($user) && is_string($user['pwdhash']) ? $user['pwdhash'] : self::DUMMY_BCRYPT_HASH;
-        $validPassword = password_verify($password, $passwordHash);
-        if ($user === null || !is_string($user['pwdhash']) || !$validPassword) {
-            throw new AuthException('Invalid email or password', 401);
-        }
+        try {
+            $user = $this->users()->findUserByEmail($email);
+            $passwordHash = is_string($user['pwdhash'] ?? null) ? $user['pwdhash'] : self::DUMMY_BCRYPT_HASH;
+            $validPassword = password_verify($password, $passwordHash);
+            if (!is_string($user['pwdhash'] ?? null) || !$validPassword) {
+                throw new AuthException('Invalid email or password', 401);
+            }
 
+            $this->requireLoginEligible($user);
+            $totpEnabled = TotpService::enabled($user);
+            if ($request !== null && $totpEnabled && !$requireOrigin($request)) {
+                throw new TotpException('origin_rejected');
+            }
+
+            if ($request !== null) {
+                $response = $this->totp()->closePresentedChallenge($request, $response, !$totpEnabled);
+            }
+
+            $result = $this->users()->withLockedUser(
+                (int) $user['id'],
+                function (?array $current) use ($user, $request, $rememberMe, $totpEnabled): array {
+                    if (
+                        $current === null
+                        || $current['pwdhash'] !== $user['pwdhash']
+                        || $current['email'] !== $user['email']
+                    ) {
+                        throw new AuthException('Invalid email or password', 401);
+                    }
+
+                    $this->requireLoginEligible($current);
+                    if (TotpService::enabled($current) !== $totpEnabled || $current['auth_version'] !== $user['auth_version']) {
+                        throw new AuthException('Invalid email or password', 401);
+                    }
+
+                    if ($totpEnabled) {
+                        return $request === null
+                            ? ['authenticated' => false, 'next' => 'totp_required']
+                            : $this->totp()->startLogin($current, $rememberMe);
+                    }
+
+                    return ['user' => $current, 'session' => $this->createLoginSession($current, $rememberMe)];
+                }
+            );
+
+            if (isset($result['session'])) {
+                return $this->completeLogin($result['user'], $result['session'], $response, $rememberMe);
+            }
+
+            if (isset($result['credential'])) {
+                $response = $this->totp()->setChallengeCookie($response, $result['credential']);
+                unset($result['credential']);
+            }
+
+            return $result + ['response' => $response];
+        } catch (AuthException $exception) {
+            throw $exception;
+        } catch (RuntimeException | ContainerExceptionInterface) {
+            throw new TotpException('auth_unavailable');
+        }
+    }
+
+    /** @param array<string, mixed> $user */
+    private function requireLoginEligible(array $user): void
+    {
         if (!$user['email_verified']) {
             throw new AuthException('Email address is not verified', 403);
         }
@@ -121,19 +221,133 @@ class AuthService
         if (!$user['enabled']) {
             throw new AuthException('User is disabled', 403);
         }
+    }
 
+    /**
+     * @param array<string, mixed> $user
+     * @return array{refresh: RefreshToken, access: AccessToken}
+     */
+    private function createLoginSession(array $user, bool $rememberMe): array
+    {
+        // Reject missing cookie configuration before writing a refresh record.
+        $this->loginCookieSettings($rememberMe);
         $handler = new TokenHandler($this->container);
         $handler->generateRefreshToken((string) $user['id'], $this->userTokenClaims($user));
         $refreshToken = $handler->getRefreshToken();
         $accessToken = $refreshToken->getAccessToken();
-        $refreshClaims = $refreshToken->getToken();
-
         $this->storeRefreshTokenForUser((int) $user['id'], $refreshToken);
 
-        $response = $this->setLoginCookie($response, $refreshToken->getTokenJWT(), $accessToken->getTokenJWT(), $rememberMe);
-        $this->logTokenIssued($user, (string) $refreshClaims->jti);
+        return ['refresh' => $refreshToken, 'access' => $accessToken];
+    }
+
+    /**
+     * @param array<string, mixed> $user
+     * @param array{refresh: RefreshToken, access: AccessToken} $session
+     * @return array<string, mixed>
+     */
+    private function completeLogin(array $user, array $session, ResponseInterface $response, bool $rememberMe): array
+    {
+        $response = $this->setLoginCookie(
+            $response,
+            $session['refresh']->getTokenJWT(),
+            $session['access']->getTokenJWT(),
+            $rememberMe
+        );
+        $this->logTokenIssued($user, (string) $session['refresh']->getToken()->jti);
 
         return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($user);
+    }
+
+    /** @return array<string, mixed> */
+    public function loginTotp(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $flowId,
+        #[SensitiveParameter]
+        string $code
+    ): array {
+        $result = $this->totp()->completeLogin($request, $flowId, $code, $this->createLoginSession(...));
+        $response = $this->totp()->clearChallengeCookie($response);
+
+        try {
+            return $this->completeLogin($result['user'], $result['session'], $response, $result['rememberMe']);
+        } catch (RuntimeException | InvalidArgumentException) {
+            throw new TotpException('auth_unavailable');
+        }
+    }
+
+    /** @return array<string, mixed> */
+    public function totpStatus(CurrentSession $session, ResponseInterface $response): array
+    {
+        return $this->totp()->status($session) + ['response' => $response];
+    }
+
+    /** @return array<string, mixed> */
+    public function startTotpSetup(
+        CurrentSession $session,
+        ResponseInterface $response,
+        #[SensitiveParameter]
+        string $currentPassword,
+        #[SensitiveParameter]
+        ?string $code
+    ): array {
+        return $this->totp()->setup($session, $currentPassword, $code) + ['response' => $response];
+    }
+
+    /** @return array<string, mixed> */
+    public function confirmTotpSetup(
+        CurrentSession $session,
+        ResponseInterface $response,
+        string $flowId,
+        #[SensitiveParameter]
+        string $code
+    ): array {
+        $result = $this->totp()->confirmSetup($session, $flowId, $code);
+
+        return $result + ['response' => $this->clearLoginCookie($response)];
+    }
+
+    /** @return array<string, mixed> */
+    public function disableTotp(
+        CurrentSession $session,
+        ResponseInterface $response,
+        #[SensitiveParameter]
+        string $currentPassword,
+        #[SensitiveParameter]
+        string $code
+    ): array {
+        $result = $this->totp()->disable($session, $currentPassword, $code);
+
+        return $result + ['response' => $this->clearLoginCookie($response)];
+    }
+
+    /** @return array<string, mixed> */
+    public function startTotpRecovery(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $flowId,
+        #[SensitiveParameter]
+        string $recoveryCode
+    ): array {
+        $result = $this->totp()->recover($request, $flowId, $recoveryCode);
+        $response = $this->totp()->setChallengeCookie($response, $result['credential'], true);
+        unset($result['credential']);
+
+        return $result + ['response' => $response];
+    }
+
+    /** @return array<string, mixed> */
+    public function confirmTotpRecovery(
+        ServerRequestInterface $request,
+        ResponseInterface $response,
+        string $flowId,
+        #[SensitiveParameter]
+        string $code
+    ): array {
+        $result = $this->totp()->confirmRecovery($request, $flowId, $code);
+        $response = $this->totp()->clearChallengeCookie($response);
+
+        return $result + ['response' => $this->clearLoginCookie($response)];
     }
 
     /**
@@ -168,21 +382,49 @@ class AuthService
     }
 
     /**
+     * Checks the current refresh record and account without issuing a cookie or rotating a token.
+     */
+    public function currentSession(ServerRequestInterface $request): CurrentSession
+    {
+        try {
+            $bundle = $this->readCookieBundle($request);
+            $context = $this->decodeRefreshContext($bundle['refreshToken']);
+        } catch (Throwable) {
+            throw new TotpException('current_session_required');
+        }
+
+        try {
+            $this->requireStoredRefreshSession($context['session']);
+            $this->requireActiveRefreshUser($this->users()->findUserById($context['session']->userId));
+        } catch (AuthException) {
+            throw new TotpException('current_session_required');
+        } catch (RuntimeException | ContainerExceptionInterface) {
+            throw new TotpException('auth_unavailable');
+        }
+
+        return $context['session'];
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function logout(ServerRequestInterface $request, ResponseInterface $response): array
     {
+        $response = $this->totp()->closePresentedChallenge($request, $response);
+
         try {
             $bundle = $this->readCookieBundle($request);
-            $refreshToken = new RefreshToken($this->container);
-            $refreshToken->loadRefreshTokenFromJWT($bundle['refreshToken']);
-            $claims = $refreshToken->getToken();
+            $session = $this->decodeRefreshContext($bundle['refreshToken'])['session'];
         } catch (Throwable) {
             // Logout must be idempotent for missing or invalid cookies.
             return $this->unauthenticated($this->clearLoginCookie($response));
         }
 
-        $this->users()->revokeRefreshTokenByJti((string) $claims->jti, $this->now());
+        $this->users()->withLockedUser($session->userId, function (?array $user) use ($session): void {
+            if ($user !== null) {
+                $this->users()->revokeRefreshTokenByJti($session->refreshJti, $this->now());
+            }
+        });
 
         return $this->unauthenticated($this->clearLoginCookie($response));
     }
@@ -210,20 +452,31 @@ class AuthService
         }
 
         $this->assertValidNewPassword($newPassword, $confirmPassword, $user['pwdhash']);
-        $refreshJti = (string) $refreshContext['refreshToken']->getToken()->jti;
+        $session = $refreshContext['session'];
         $newPasswordHash = password_hash($newPassword, PASSWORD_BCRYPT);
-        $this->users()->changePasswordAndRevokeOtherRefreshTokens(
-            (int) $user['id'],
-            $newPasswordHash,
-            $refreshJti,
-            $this->now()
+        $this->users()->withLockedUser(
+            $session->userId,
+            function (?array $current) use ($session, $user, $newPasswordHash): void {
+                $this->requireActiveRefreshUser($current);
+                $this->requireStoredRefreshSession($session, true);
+                if ($current['pwdhash'] !== $user['pwdhash']) {
+                    throw new InvalidArgumentException('Current password is incorrect');
+                }
+
+                $this->users()->changePasswordAndRevokeOtherRefreshTokens(
+                    $session->userId,
+                    $newPasswordHash,
+                    $session->refreshJti,
+                    $this->now()
+                );
+            }
         );
         $updatedUser = $this->users()->findUserById((int) $user['id']) ?? $user;
 
         $this->logger->notice('auth.password_changed', [
             'user_id' => (int) $user['id'],
             'email' => (string) $user['email'],
-            'refresh_token_jti' => $refreshJti,
+            'refresh_token_jti' => $session->refreshJti,
         ]);
 
         return [
@@ -240,60 +493,42 @@ class AuthService
     {
         try {
             $bundle = $this->readCookieBundle($request);
-            if ($this->statelessSessions()) {
-                $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
-                $refreshToken = $refreshContext['refreshToken'];
-                $refreshClaims = $refreshToken->getToken();
-                $refreshTokenJwt = $bundle['refreshToken'];
-                $rememberMe = $bundle['rememberMe'];
+            $context = $this->decodeRefreshContext($bundle['refreshToken']);
+            $session = $context['session'];
+            $stateless = $this->statelessSessions();
+            $result = $this->users()->withLockedUser(
+                $session->userId,
+                function (?array $user) use ($context, $session, $stateless): array {
+                    $this->requireStoredRefreshSession($session, true);
+                    $this->requireActiveRefreshUser($user);
 
-                if ($this->shouldAutoRefreshRefreshToken($refreshClaims)) {
-                    $oldRefreshJti = (string) $refreshClaims->jti;
-                    $refreshed = new TokenHandler($this->container);
-                    $refreshed->generateRefreshToken(
-                        (string) $refreshClaims->sub,
-                        $this->customClaims($refreshClaims)
-                    );
-                    $refreshToken = $refreshed->getRefreshToken();
-                    $refreshTokenJwt = $refreshToken->getTokenJWT();
-                    $refreshClaims = $refreshToken->getToken();
-                    $this->storeRefreshTokenForUser((int) $refreshContext['user']['id'], $refreshToken);
-                    $this->users()->revokeRefreshTokenByJti($oldRefreshJti, $this->now());
+                    $refresh = $context['refreshToken'];
+                    if ($stateless && $this->shouldAutoRefreshRefreshToken($refresh->getToken())) {
+                        $refresh = $this->rotateRefreshToken($refresh, $session);
+                    }
+
+                    return ['refresh' => $refresh, 'access' => $refresh->getAccessToken(), 'user' => $user];
                 }
-
-                $accessToken = $refreshToken->getAccessToken();
-                $response = $this->setLoginCookie(
-                    $response,
-                    $refreshTokenJwt,
-                    $accessToken->getTokenJWT(),
-                    $rememberMe
-                );
-                $this->logTokenIssuedFromClaims($refreshClaims, 'access_refresh');
-
-                return [
-                    'authenticated' => true,
-                    'response' => $response,
-                ] + $this->safeUserFieldsFromClaims($refreshClaims);
-            }
-
-            $refreshContext = $this->validRefreshContext($bundle['refreshToken']);
-            $accessToken = $refreshContext['refreshToken']->getAccessToken();
+            );
             $response = $this->setLoginCookie(
                 $response,
-                $bundle['refreshToken'],
-                $accessToken->getTokenJWT(),
+                $result['refresh']->getTokenJWT(),
+                $result['access']->getTokenJWT(),
                 $bundle['rememberMe']
             );
-            $this->logTokenIssued(
-                $refreshContext['user'],
-                (string) $refreshContext['refreshToken']->getToken()->jti,
-                'access_refresh'
-            );
+            $claims = $result['refresh']->getToken();
+            if ($stateless) {
+                $this->logTokenIssuedFromClaims($claims, 'access_refresh');
 
-            return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($refreshContext['user']);
+                return ['authenticated' => true, 'response' => $response] + $this->safeUserFieldsFromClaims($claims);
+            }
+
+            $this->logTokenIssued($result['user'], (string) $claims->jti, 'access_refresh');
+
+            return ['authenticated' => true, 'response' => $response] + $this->safeUserFields($result['user']);
         } catch (Throwable $throwable) {
             $this->logger->warning('auth.refresh_token_rejected', [
-                'reason' => $throwable->getMessage(),
+                'reason' => $throwable instanceof AuthException ? $throwable->getMessage() : 'Refresh token could not be validated',
                 'exception' => $throwable::class,
             ]);
 
@@ -301,33 +536,72 @@ class AuthService
         }
     }
 
+    private function rotateRefreshToken(RefreshToken $refresh, CurrentSession $session): RefreshToken
+    {
+        $claims = $refresh->getToken();
+        $handler = new TokenHandler($this->container);
+        $handler->generateRefreshToken((string) $claims->sub, $this->customClaims($claims));
+        $successor = $handler->getRefreshToken();
+        $this->storeRefreshTokenForUser($session->userId, $successor);
+        if (!$this->users()->revokeRefreshTokenByJti($session->refreshJti, $this->now())) {
+            throw new AuthException('Refresh token is not active');
+        }
+
+        return $successor;
+    }
+
     /**
-     * @return array{refreshToken: RefreshToken, user: array<string, mixed>}
+     * @return array{refreshToken: RefreshToken, session: CurrentSession, user: array<string, mixed>}
      */
-    private function validRefreshContext(string $refreshJwt): array
+    private function validRefreshContext(#[SensitiveParameter] string $refreshJwt): array
+    {
+        $context = $this->decodeRefreshContext($refreshJwt);
+        $this->requireStoredRefreshSession($context['session']);
+        $user = $this->users()->findUserById($context['session']->userId);
+        $this->requireActiveRefreshUser($user);
+
+        return $context + ['user' => $user];
+    }
+
+    /** @return array{refreshToken: RefreshToken, session: CurrentSession} */
+    private function decodeRefreshContext(#[SensitiveParameter] string $refreshJwt): array
     {
         $refreshToken = new RefreshToken($this->container);
         $refreshToken->loadRefreshTokenFromJWT($refreshJwt);
         $claims = $refreshToken->getToken();
-        $storedToken = $this->users()->findValidRefreshToken(
-            (string) $claims->jti,
-            $this->tokenHash($refreshJwt),
-            $this->now()
-        );
-        if ($storedToken === null) {
-            throw new RuntimeException('Refresh token is not active');
+
+        $userId = (int) $claims->sub;
+        if ((string) $userId !== (string) $claims->sub || $userId <= 0) {
+            throw new AuthException('Refresh token subject is invalid');
         }
 
-        $user = $this->users()->findUserById((int) $storedToken['users_id']);
+        return [
+            'refreshToken' => $refreshToken,
+            'session' => new CurrentSession($userId, (string) $claims->jti, $this->tokenHash($refreshJwt)),
+        ];
+    }
+
+    private function requireStoredRefreshSession(CurrentSession $session, bool $forUpdate = false): void
+    {
+        $now = $this->now();
+        $stored = $forUpdate
+            ? $this->users()->findValidRefreshTokenForUpdate($session->refreshJti, $session->refreshTokenHash(), $now)
+            : $this->users()->findValidRefreshToken($session->refreshJti, $session->refreshTokenHash(), $now);
+        if ($stored === null) {
+            throw new AuthException('Refresh token is not active');
+        }
+
+        if ((int) $stored['users_id'] !== $session->userId) {
+            throw new AuthException('Refresh token subject does not match stored user');
+        }
+    }
+
+    /** @param array<string, mixed>|null $user */
+    private function requireActiveRefreshUser(?array $user): void
+    {
         if ($user === null || !$user['enabled'] || !$user['email_verified']) {
-            throw new RuntimeException('Refresh token user is not active');
+            throw new AuthException('Refresh token user is not active');
         }
-
-        if ((string) $claims->sub !== (string) $user['id']) {
-            throw new RuntimeException('Refresh token subject does not match stored user');
-        }
-
-        return ['refreshToken' => $refreshToken, 'user' => $user];
     }
 
     /**
@@ -568,6 +842,18 @@ class AuthService
         }
 
         return $this->users;
+    }
+
+    private function totp(): TotpService
+    {
+        if (!$this->totp instanceof TotpService) {
+            $clock = $this->container->has(ClockInterface::class)
+                ? $this->container->get(ClockInterface::class)
+                : new SystemClock();
+            $this->totp = new TotpService($this->users(...), $this->logger, $clock, $this->settings());
+        }
+
+        return $this->totp;
     }
 
     private function nullableString(mixed $value): ?string

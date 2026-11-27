@@ -84,6 +84,16 @@ return [
                 'expire' => 86400,
                 'devExposeToken' => $runtimeEnvironment === 'development',
             ],
+            'auth' => [
+                'totp' => [
+                    'allowEnrollment' => getenv('PYROSHAPE_TOTP_ALLOW_ENROLLMENT') === '1',
+                    'issuer' => getenv('PYROSHAPE_TOTP_ISSUER') ?: 'Pyroshape',
+                    'activeKeyId' => (string) getenv('PYROSHAPE_TOTP_KEY_ID'),
+                    'keys' => json_decode(getenv('PYROSHAPE_TOTP_KEYS') ?: '{}', true),
+                    'publicOrigin' => getenv('PYROSHAPE_TOTP_PUBLIC_ORIGIN') ?: null,
+                    'secureCookie' => $runtimeEnvironment !== 'development',
+                ],
+            ],
         ];
     },
 ];
