@@ -19,6 +19,7 @@
         "psr/clock": "^1.0",
         "spomky-labs/otphp": "^11.5.1"
     },
+    "bin": ["bin/pyroshape-prune-totp.php"],
     "autoload": {
         "psr-4": {
             "TuxWeb\\Pyroshape\\Core\\": "src/"

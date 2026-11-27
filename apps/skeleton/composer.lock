@@ -1349,7 +1349,7 @@
             "dist": {
                 "type": "path",
                 "url": "../..",
-                "reference": "97329eb6c01f2b3f7288a132ec680acc64d16213"
+                "reference": "01c4ac04c54878756e7683efe0be8484fbf4ef34"
             },
             "require": {
                 "ext-openssl": "*",
@@ -1361,6 +1361,9 @@
                 "slim/psr7": "^1.8",
                 "spomky-labs/otphp": "^11.5.1"
             },
+            "bin": [
+                "bin/pyroshape-prune-totp.php"
+            ],
             "type": "library",
             "autoload": {
                 "psr-4": {

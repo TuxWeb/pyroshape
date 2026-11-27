@@ -54,7 +54,9 @@ final class RequireSameOrigin implements MiddlewareInterface
     {
         $origin = self::normalize($request->getHeaderLine('Origin'));
         $uri = $request->getUri();
-        $target = $publicOrigin ?? $uri->getScheme() . '://' . $uri->getAuthority();
+        $scheme = $uri->getScheme() ?: 'http';
+        $authority = $uri->getAuthority() ?: $request->getHeaderLine('Host');
+        $target = $publicOrigin ?? "$scheme://$authority";
 
         return $origin !== null && $origin === self::normalize($target);
     }

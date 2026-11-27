@@ -495,4 +495,11 @@ assertPayloadValue(responseJson($deleteProjectResponse), 'deleted', true, 'delet
 $deletedProjectResponse = $slim->handle(jsonRequest('GET', "/api/projects/$projectId", null, $userA['cookie']));
 assertStatus($deletedProjectResponse, 404, 'deleted project detail');
 
+$logoutResponse = $slim->handle(jsonRequest('POST', '/api/auth/logout', null, $userA['cookie']));
+assertStatus($logoutResponse, 200, 'logout before testing sensitive routes');
+$readAfterLogout = $slim->handle(jsonRequest('GET', '/api/projects', null, $userA['cookie']));
+assertStatus($readAfterLogout, 200, 'ordinary read during the stateless access window');
+$deleteAfterLogout = $slim->handle(jsonRequest('DELETE', "/api/projects/$projectId", null, $userA['cookie']));
+assertStatus($deleteAfterLogout, 401, 'delete requires an active refresh session');
+
 echo "project api ok\n";

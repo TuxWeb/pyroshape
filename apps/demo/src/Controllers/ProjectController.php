@@ -17,6 +17,8 @@ declare(strict_types=1);
 namespace TuxWeb\PyroshapeDemo\Controllers;
 
 use TuxWeb\Pyroshape\Core\Middlewares\Auth\CheckValidAuthToken;
+use TuxWeb\Pyroshape\Core\Middlewares\Auth\RequireCurrentSession;
+use TuxWeb\Pyroshape\Core\Auth\CurrentSession;
 use TuxWeb\PyroshapeDemo\Domain\Projects\ProjectRepository;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -243,6 +245,11 @@ class ProjectController
 
     private function userId(Request $request): int
     {
+        $session = $request->getAttribute(RequireCurrentSession::SESSION_ATTRIBUTE);
+        if ($session instanceof CurrentSession) {
+            return $session->userId;
+        }
+
         return (int) $request->getAttribute(CheckValidAuthToken::UID_ATTRIBUTE, '');
     }
 

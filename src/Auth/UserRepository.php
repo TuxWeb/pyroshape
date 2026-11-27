@@ -393,7 +393,7 @@ class UserRepository
             || !(is_int($row['auth_version']) || is_string($row['auth_version']) && ctype_digit($row['auth_version']))
             || (int) $row['auth_version'] < 0
         ) {
-            throw new RuntimeException('TOTP user schema is unavailable');
+            throw new TotpException('auth_unavailable');
         }
 
         return $this->normalizeUserRow($row) + [

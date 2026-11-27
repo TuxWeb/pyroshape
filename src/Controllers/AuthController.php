@@ -294,76 +294,11 @@ class AuthController
 
     private function hasValidSameOriginHeader(Request $request): bool
     {
-        $origin = trim($request->getHeaderLine('Origin'));
-        if ($origin === '') {
+        if (trim($request->getHeaderLine('Origin')) === '') {
             return true;
         }
 
-        $origin = $this->normalizeOrigin($origin);
-        $requestOrigin = $this->requestOrigin($request);
-        if ($origin === null || $requestOrigin === null) {
-            return false;
-        }
-
-        return $origin === $requestOrigin;
-    }
-
-    private function requestOrigin(Request $request): ?string
-    {
-        $uri = $request->getUri();
-        $scheme = $uri->getScheme();
-        $host = $uri->getHost();
-        if ($scheme === '') {
-            $scheme = 'http';
-        }
-        if ($host === '') {
-            return $this->normalizeOrigin($scheme . '://' . $request->getHeaderLine('Host'));
-        }
-
-        return $this->originFromParts($scheme, $host, $uri->getPort());
-    }
-
-    private function normalizeOrigin(string $origin): ?string
-    {
-        if ($origin === '') {
-            return null;
-        }
-
-        $parts = parse_url($origin);
-        if (!is_array($parts)) {
-            return null;
-        }
-
-        $scheme = $parts['scheme'] ?? null;
-        $host = $parts['host'] ?? null;
-        if (!is_string($scheme) || $scheme === '' || !is_string($host) || $host === '') {
-            return null;
-        }
-
-        $port = $parts['port'] ?? null;
-
-        return $this->originFromParts($scheme, $host, is_int($port) ? $port : null);
-    }
-
-    private function originFromParts(string $scheme, string $host, ?int $port): ?string
-    {
-        $scheme = strtolower($scheme);
-        $host = strtolower($host);
-        if ($scheme === '' || $host === '') {
-            return null;
-        }
-
-        $origin = $scheme . '://' . $host;
-        if ($port !== null && !$this->isDefaultPort($scheme, $port)) {
-            $origin .= ':' . $port;
-        }
-
-        return $origin;
-    }
-
-    private function isDefaultPort(string $scheme, int $port): bool
-    {
-        return ($scheme === 'http' && $port === 80) || ($scheme === 'https' && $port === 443);
+        return $this->requireSameOrigin?->allows($request) ?? RequireSameOrigin::matches($request);
     }
 
     private function isDuplicateEmailError(PDOException $exception): bool

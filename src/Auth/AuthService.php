@@ -30,6 +30,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use ReflectionMethod;
 use RuntimeException;
 use SensitiveParameter;
 use Throwable;
@@ -132,6 +133,18 @@ class AuthService
         ServerRequestInterface $request,
         callable $requireOrigin
     ): array {
+        if ((new ReflectionMethod($this, 'login'))->getDeclaringClass()->getName() !== self::class) {
+            // Let a consuming app's login override apply its policy before starting a browser challenge.
+            $outcome = $this->login($email, $password, $response, $rememberMe);
+            if (($outcome['next'] ?? null) !== 'totp_required') {
+                if (($outcome['authenticated'] ?? false) === true && $request->getCookieParams() !== []) {
+                    $outcome['response'] = $this->totp()->closePresentedChallenge($request, $outcome['response'] ?? $response);
+                }
+
+                return $outcome;
+            }
+        }
+
         return $this->passwordLogin($email, $password, $response, $rememberMe, $request, $requireOrigin);
     }
 
@@ -149,6 +162,7 @@ class AuthService
         ?callable $requireOrigin = null
     ): array {
         $this->assertValidPassword($password);
+        $totpEnabled = false;
 
         try {
             $user = $this->users()->findUserByEmail($email);
@@ -206,7 +220,11 @@ class AuthService
             return $result + ['response' => $response];
         } catch (AuthException $exception) {
             throw $exception;
-        } catch (RuntimeException | ContainerExceptionInterface) {
+        } catch (RuntimeException | ContainerExceptionInterface $exception) {
+            if (!$totpEnabled) {
+                throw $exception;
+            }
+
             throw new TotpException('auth_unavailable');
         }
     }
@@ -302,9 +320,10 @@ class AuthService
         #[SensitiveParameter]
         string $code
     ): array {
+        $response = $this->prepareFactorSignOut($response);
         $result = $this->totp()->confirmSetup($session, $flowId, $code);
 
-        return $result + ['response' => $this->clearLoginCookie($response)];
+        return $result + ['response' => $response];
     }
 
     /** @return array<string, mixed> */
@@ -316,9 +335,10 @@ class AuthService
         #[SensitiveParameter]
         string $code
     ): array {
+        $response = $this->prepareFactorSignOut($response);
         $result = $this->totp()->disable($session, $currentPassword, $code);
 
-        return $result + ['response' => $this->clearLoginCookie($response)];
+        return $result + ['response' => $response];
     }
 
     /** @return array<string, mixed> */
@@ -344,10 +364,20 @@ class AuthService
         #[SensitiveParameter]
         string $code
     ): array {
-        $result = $this->totp()->confirmRecovery($request, $flowId, $code);
         $response = $this->totp()->clearChallengeCookie($response);
+        $response = $this->prepareFactorSignOut($response);
+        $result = $this->totp()->confirmRecovery($request, $flowId, $code);
 
-        return $result + ['response' => $this->clearLoginCookie($response)];
+        return $result + ['response' => $response];
+    }
+
+    private function prepareFactorSignOut(ResponseInterface $response): ResponseInterface
+    {
+        try {
+            return $this->clearLoginCookie($response);
+        } catch (RuntimeException) {
+            throw new TotpException('auth_unavailable');
+        }
     }
 
     /**
@@ -491,9 +521,12 @@ class AuthService
      */
     private function refreshExpiredAccessToken(ServerRequestInterface $request, ResponseInterface $response): array
     {
+        $clearInvalidCookie = true;
         try {
             $bundle = $this->readCookieBundle($request);
             $context = $this->decodeRefreshContext($bundle['refreshToken']);
+            // A concurrent renewal can already have issued a newer cookie for this session.
+            $clearInvalidCookie = false;
             $session = $context['session'];
             $stateless = $this->statelessSessions();
             $result = $this->users()->withLockedUser(
@@ -532,7 +565,7 @@ class AuthService
                 'exception' => $throwable::class,
             ]);
 
-            return $this->unauthenticated($response, true);
+            return $this->unauthenticated($response, $clearInvalidCookie);
         }
     }
 
