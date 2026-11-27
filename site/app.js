@@ -1,4 +1,4 @@
-import { content } from './content.js';
+import { content } from './content.js?v=agent-prompt';
 
 const languageLinks = [...document.querySelectorAll('[data-language]')];
 const phaseButtons = [...document.querySelectorAll('[data-phase]')];
@@ -43,7 +43,8 @@ function renderLanguage() {
   document.querySelector('meta[property="og:description"]').content = copy.description;
 
   for (const element of labels) {
-    element.textContent = copy[element.dataset.text];
+    const translation = copy[element.dataset.text];
+    if (typeof translation === 'string') element.textContent = translation;
   }
   for (const element of ariaLabels) {
     element.setAttribute('aria-label', copy[element.dataset.label]);

@@ -14,8 +14,8 @@
   <meta property="og:title" content="Pyroshape · PHP for single-page apps">
   <meta property="og:description" content="An open-source PHP backend for single-page apps, built on Slim and PHP-DI.">
   <title>Pyroshape · PHP for single-page apps</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js"></script>
+  <link rel="stylesheet" href="./styles.css?v=prompt-layout">
+  <script type="module" src="./app.js?v=locale-fallback"></script>
 </head>
 <body id="top">
   <a class="skip-link" href="#main" data-text="skip">Skip to content</a>
@@ -176,7 +176,7 @@
           </div>
           <div class="code-panel">
             <div class="code-bar"><span>Prompt</span><button type="button" class="copy-button" data-copy="agent-prompt" data-text="copy">Copy</button></div>
-            <pre><code id="agent-prompt"><span data-text="agentsPrompt">Build a SPA for [your idea] using the Pyroshape starter. Get the first screen running locally. Follow the project guide at</span> <a href="https://github.com/TuxWeb/pyroshape/blob/main/AGENTS.md">https://github.com/TuxWeb/pyroshape/blob/main/AGENTS.md</a></code></pre>
+            <div class="prompt-body" id="agent-prompt"><p data-text="agentsPrompt">Build a SPA for [your idea] using the Pyroshape starter. Get the first screen running locally. Follow the project guide at</p> <a href="https://github.com/TuxWeb/pyroshape/blob/main/AGENTS.md">https://github.com/TuxWeb/pyroshape/blob/main/AGENTS.md</a></div>
           </div>
         </section>
         <div class="use-line">
