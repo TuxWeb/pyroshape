@@ -14,6 +14,7 @@ description: Develop or troubleshoot Pyroshape Core and applications that use th
 ## Choose the relevant workflow
 
 - For a new app, Composer integration, app routes, or frontend work, read [Application integration](references/application.md).
+- For TOTP enrollment, device recovery, or a setup screen that shows only the manual key, read [TOTP setup in an existing SPA](references/application.md#totp-setup-in-an-existing-spa).
 - For shared Core changes, authentication, database compatibility, or HTTP and SPA routing issues, read [Core contracts](references/core-contracts.md).
 - For production artifact builds, deployment, preflight errors, or rollback, read the [production deployment guide](../../docs/operations/deploy-app.md). Start by identifying the app's target, lockfile, artifact manifest, and established release procedure.
 
